@@ -7,4 +7,6 @@ class MangoSpider(scrapy.Spider):
     start_urls = ["https://shop.mango.com"]
 
     def parse(self, response):
-        pass
+        yield {
+            'url': response.url,
+        }
