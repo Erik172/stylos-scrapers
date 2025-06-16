@@ -4,6 +4,8 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from scrapy.exceptions import IgnoreRequest
+import re
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +103,20 @@ class StylosDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+class BlocklistMiddleware:
+    BLOCKLIST_TERMS = [
+        'zara-50-anniversary-film-mkt15654.html',
+        '/login',
+        '/register',
+        'mailto:'
+    ]
+    
+    def process_request(self, request, spider):
+        """
+        Este método es llamado por Scrapy para cada petición antes de ser descargada.
+        """
+        # Comprobamos si alguno de los términos de nuestra blocklist está en la URL de la petición
+        if any(term in request.url for term in self.BLOCKLIST_TERMS):
+            raise IgnoreRequest("URL bloqueada")
+        return None

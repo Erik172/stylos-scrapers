@@ -38,6 +38,8 @@ requests==2.32.4
 requests-file==2.1.0
 Scrapy==2.13.2
 scrapy-playwright==0.0.43
+scrapy-selenium==0.0.7
+selenium==4.33.0
 service-identity==24.2.0
 setuptools==80.9.0
 six==1.17.0
@@ -50,6 +52,7 @@ Twisted==25.5.0
 typing_extensions==4.13.2
 urllib3==2.4.0
 w3lib==2.3.1
+webdriver-manager==4.0.2
 websocket-client==1.8.0
 wsproto==1.2.0
 zope.interface==7.2

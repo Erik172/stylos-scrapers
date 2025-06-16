@@ -50,13 +50,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "stylos.middlewares.StylosDownloaderMiddleware": 543,
-#}
-
-DOWNLOAD_HANDLERS = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+DOWNLOADER_MIDDLEWARES = {
+    # "stylos.middlewares.StylosDownloaderMiddleware": 543,
+    "stylos.middlewares.BlocklistMiddleware": 544,
 }
 
 # Enable or disable extensions
@@ -96,7 +92,3 @@ DOWNLOAD_HANDLERS = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
-
-PLAYWRIGHT_LAUNCH_OPTIONS = {
-    "headless": False,
-}
