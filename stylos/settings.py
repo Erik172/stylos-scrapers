@@ -7,6 +7,11 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BOT_NAME = "stylos"
 
 SPIDER_MODULES = ["stylos.spiders"]
@@ -52,6 +57,7 @@ ROBOTSTXT_OBEY = False
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     # "stylos.middlewares.StylosDownloaderMiddleware": 543,
+    "stylos.middlewares.SeleniumMiddleware": 543,
     "stylos.middlewares.BlocklistMiddleware": 544,
 }
 
@@ -63,9 +69,11 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "stylos.pipelines.StylosPipeline": 300,
-#}
+ITEM_PIPELINES = {
+    "stylos.pipelines.DuplicatesPipeline": 200,    # Filtrar duplicados primero
+    "stylos.pipelines.StylosPipeline": 300,        # Procesamiento general
+    "stylos.pipelines.MongoDBPipeline": 400,       # Guardar en MongoDB al final
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -92,3 +100,24 @@ DOWNLOADER_MIDDLEWARES = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# =============================================================================
+# CONFIGURACIÓN DE MONGODB
+# =============================================================================
+
+# URI de conexión a MongoDB (cambiar según tu configuración)
+MONGO_URI = os.getenv("MONGO_URI")
+
+# Nombre de la base de datos
+MONGO_DATABASE = os.getenv("MONGO_DATABASE", "stylos_scrapers")
+
+# Nombre de la colección donde se guardarán los productos
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "zara_products")
+
+# Nombre de la colección para el historial de cambios (opcional)
+MONGO_HISTORY_COLLECTION = os.getenv("MONGO_HISTORY_COLLECTION", "product_history")
+
+# Configuración adicional de MongoDB (opcional)
+MONGO_USERNAME = os.getenv("MONGO_USERNAME")
+MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
+MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")

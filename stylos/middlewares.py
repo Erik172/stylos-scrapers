@@ -5,10 +5,89 @@
 
 from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
-import re
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from fake_useragent import UserAgent
+
+class SeleniumMiddleware:
+    def __init__(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--headless") # Actívalo en producción
+        chrome_options.add_argument('--window-size=1920x1080')
+        chrome_options.add_argument(f'user-agent={UserAgent().random}')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_argument("--blink-settings=imagesEnabled=false") # Deshabilitar imágenes
+        
+        self.driver = webdriver.Chrome(options=chrome_options)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        # Este método es usado por Scrapy para crear tus middlewares.
+        s = cls()
+        crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
+        return s
+
+    def process_request(self, request, spider):
+        # Solo procesa las peticiones que marquemos con meta['selenium'] = True
+        if not request.meta.get('selenium'):
+            return None
+
+        spider.log(f"Procesando con Selenium: {request.url}")
+        self.driver.get(request.url)
+
+        # Si una función de espera está definida en meta, la ejecutamos.
+        # Esto nos da control sobre qué esperar en cada página.
+        if request.meta.get('wait_for'):
+            wait_function = request.meta['wait_for']
+            wait_function(self.driver)
+        else:
+            # Espera por defecto
+            WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+
+        # Devuelve el HTML renderizado para que Scrapy lo procese
+        body = self.driver.page_source
+        
+        # Crear el response
+        response = HtmlResponse(
+            self.driver.current_url,
+            body=body,
+            encoding='utf-8',
+            request=request
+        )
+        
+        # Si el driver tiene URLs extraídas (del método wait_for_menu), las pasamos al response
+        if hasattr(self.driver, 'extracted_urls'):
+            response.meta['extracted_urls'] = self.driver.extracted_urls
+            spider.log(f"Pasando {len(self.driver.extracted_urls)} URLs extraídas al response")
+            # Limpiar las URLs del driver para la próxima vez
+            delattr(self.driver, 'extracted_urls')
+            
+        # Si el driver tiene imágenes extraídas (del método wait_for_product), las pasamos al response
+        if hasattr(self.driver, 'extracted_images'):
+            response.meta['extracted_images'] = self.driver.extracted_images
+            spider.log(f"Pasando imágenes de {len(self.driver.extracted_images)} colores al response")
+            # Limpiar las imágenes del driver para la próxima vez
+            delattr(self.driver, 'extracted_images')
+        
+        return response
+
+    def spider_closed(self):
+        self.driver.quit()
+
 
 
 class StylosSpiderMiddleware:

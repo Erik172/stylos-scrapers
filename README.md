@@ -5,65 +5,120 @@
 <!-- GIF -->
 ![Zara Scraper Demo](media/zara-demo.gif)
 
-## 🎯 Objetivo del Proyecto
+## 🎯 Descripción del Proyecto
 
-Stylos Scraper es un componente clave del proyecto **Stylos**, una aplicación de inteligencia artificial que analiza la ropa de tu "armario" y aprende a combinarlas según diferentes estilos como:
+Stylos Scraper es una solución profesional de web scraping diseñada específicamente para la extracción de datos de sitios de e-commerce de moda. Utiliza tecnologías avanzadas como Selenium y Playwright para navegar sitios web dinámicos y extraer información estructurada de productos, precios e imágenes.
+
+El proyecto forma parte del ecosistema **Stylos**, una plataforma de inteligencia artificial que analiza tendencias de moda y genera recomendaciones personalizadas basadas en diferentes estilos:
 
 - 💼 **Old Money** - Elegancia atemporal
-- 🎩 **Formal** - Vestimenta profesional
+- 🎩 **Formal** - Vestimenta profesional  
 - 🛹 **Streetwear** - Moda urbana y casual
-- ✨ Y muchos más estilos personalizables
+- ✨ **Y muchos más estilos personalizables**
 
-## 🚧 Estado Actual
+## 🚀 Características Principales
 
-**⚠️ Proyecto en Desarrollo Activo**
+### ⚡ Navegación Dinámica Avanzada
+- **Automatización completa de menús**: Navegación inteligente por hamburguesas y categorías
+- **Scroll infinito**: Manejo automático de lazy loading
+- **Pestañas múltiples**: Apertura simultánea de productos para optimizar tiempo
+- **Sistema anti-detección**: User agents rotativos y configuración stealth
 
-Este scraper está siendo desarrollado para recopilar datos de moda de diferentes retailers online, con el objetivo de entrenar modelos de IA que puedan:
+### 🗄️ Gestión Inteligente de Datos
+- **MongoDB integrado**: Almacenamiento con detección automática de cambios
+- **Pipeline de normalización**: Procesamiento de precios, imágenes y metadatos
+- **Control de duplicados**: Filtrado inteligente de contenido repetido
+- **Historial de cambios**: Seguimiento de modificaciones de precios y disponibilidad
 
-1. Identificar prendas y sus características
-2. Analizar combinaciones de ropa
-3. Aprender patrones de estilo
-4. Generar recomendaciones personalizadas
+### 🔧 Arquitectura Modular
+- **Middlewares personalizados**: SeleniumMiddleware y BlocklistMiddleware
+- **Items estructurados**: Modelos de datos normalizados con validación
+- **Pipelines configurables**: Procesamiento de datos en cadena
+- **Utilidades de análisis**: Herramientas para consultar estadísticas y cambios
 
-## 🛠️ Tecnologías Utilizadas
+## 🛠️ Stack Tecnológico
 
-- **Framework Principal**: Scrapy 2.13.2
-- **Navegación Dinámica**: Selenium WebDriver + Chrome
-- **Navegación Avanzada**: Playwright (implementado)
-- **Proxy/User Agent**: Fake UserAgent 2.2.0
-- **Base de Datos**: MongoDB (PyMongo 4.13.1)
-- **Lenguaje**: Python 3.x
-- **Otros**: requests, lxml, css-select
+### Frameworks y Librerías Principales
+```
+Scrapy 2.13.2              # Framework de scraping principal
+Selenium 4.33.0            # Automatización de navegador
+PyMongo 4.13.1             # Conexión con MongoDB
+```
 
-## 📁 Estructura del Proyecto
+### Dependencias Especializadas
+```
+fake-useragent 2.2.0       # Rotación de user agents
+lxml 5.4.0                 # Procesamiento XML/HTML
+unidecode 1.4.0            # Normalización de texto
+python-dotenv 1.1.0        # Gestión de variables de entorno
+```
+
+**Total**: 59 dependencias optimizadas para web scraping profesional
+
+### Infraestructura
+- **Base de Datos**: MongoDB con autenticación
+- **Navegadores**: Chrome/Chromium con ChromeDriver
+- **Lenguaje**: Python 3.7+
+- **Variables de entorno**: Configuración segura con .env
+
+## 📁 Arquitectura del Proyecto
 
 ```
 stylos-scrapers/
-├── stylos/
-│   ├── spiders/
-│   │   ├── __init__.py      # Configuración de spiders
-│   │   ├── zara.py          # Spider para Zara (✅ Completo)
-│   │   └── mango.py         # Spider para Mango (🚧 Básico)
-│   ├── middlewares.py       # Middlewares personalizados
-│   ├── settings.py          # Configuración del proyecto
-│   ├── items.py            # Definición de items/datos
-│   ├── pipelines.py        # Procesamiento de datos
-│   └── __init__.py         
-├── requirements.txt         # 58 dependencias especializadas
-├── scrapy.cfg              # Configuración de despliegue
-├── zara.json               # Datos scrapeados (ejemplo)
-└── README.md               # Este archivo
+├── stylos/                         # Módulo principal
+│   ├── spiders/                    # Spiders de scraping
+│   │   ├── zara.py                # Spider completo de Zara (432 líneas)
+│   │   ├── mango.py               # Spider básico de Mango
+│   │   └── __init__.py
+│   ├── middlewares.py             # Middlewares personalizados (201 líneas)
+│   ├── pipelines.py               # Pipelines de procesamiento (307 líneas)
+│   ├── items.py                   # Modelos de datos (128 líneas)
+│   ├── settings.py                # Configuración del proyecto (123 líneas)
+│   ├── utils.py                   # Utilidades de análisis (149 líneas)
+│   └── __init__.py
+├── media/                         # Recursos multimedia
+│   └── zara-demo.gif             # Demo del spider en funcionamiento
+├── requirements.txt               # 59 dependencias especializadas
+├── scrapy.cfg                     # Configuración de despliegue
+└── README.md                      # Documentación
 ```
 
-## 🚀 Instalación
+## 🏪 Retailers Soportados
 
-### Prerrequisitos
+### ✅ Completamente Implementado
+**Zara (zara.py)**
+- 🔄 **Navegación completa**: Categorías de Mujer/Hombre con subcategorías
+- 🕷️ **432 líneas de código**: Lógica compleja de navegación y extracción
+- 🎯 **Extracción avanzada**: Productos, precios, imágenes por color
+- 🚀 **Selenium integrado**: ChromeDriver con configuración anti-bot
+- 📱 **Scroll infinito**: Carga automática de productos lazy-loaded
+- 🖼️ **Imágenes por color**: Extracción organizada por variantes
 
-- Python 3.7+
-- Chrome Browser
-- ChromeDriver (se instala automáticamente)
+### 🚧 En Desarrollo
+**Mango (mango.py)**
+- 📝 **Estructura base**: Spider básico inicializado
+- 🌐 **Dominio configurado**: shop.mango.com
+- ⚠️ **Pendiente**: Implementación de lógica de scraping
 
-### Pasos de Instalación
+### 📋 Roadmap de Retailers
+```
+H&M          → Fast fashion sueco
+Uniqlo       → Minimalismo japonés  
+Pull & Bear  → Grupo Inditex
+Bershka      → Moda joven
+Nike         → Deportivo premium
+Adidas       → Deportivo lifestyle
+```
+
+## 🚀 Instalación y Configuración
+
+### Prerrequisitos del Sistema
+- **Python 3.7+** (recomendado 3.9+)
+- **Chrome/Chromium Browser**
+- **MongoDB** (local o remoto)
+- **Git** para clonación del repositorio
+
+### Instalación Paso a Paso
 
 1. **Clonar el repositorio**
    ```bash
@@ -71,7 +126,7 @@ stylos-scrapers/
    cd stylos-scrapers
    ```
 
-2. **Crear entorno virtual**
+2. **Crear y activar entorno virtual**
    ```bash
    python -m venv venv
    source venv/bin/activate  # Linux/Mac
@@ -79,200 +134,152 @@ stylos-scrapers/
    venv\Scripts\activate     # Windows
    ```
 
-3. **Instalar dependencias**
+3. **Instalar todas las dependencias**
    ```bash
    pip install -r requirements.txt
    ```
 
-## 🎮 Uso
+4. **Configurar variables de entorno**
+   ```bash
+   # Crear archivo .env en la raíz del proyecto
+   MONGO_URI=mongodb://localhost:27017
+   MONGO_DATABASE=stylos_scrapers
+   MONGO_COLLECTION=products
+   MONGO_USERNAME=tu_usuario
+   MONGO_PASSWORD=tu_password
+   ```
 
-### Ejecutar Spiders Disponibles
+## 🎮 Uso y Ejecución
 
+### Comandos Básicos
 ```bash
-# Spider de Zara (completamente funcional)
+# Ejecutar spider de Zara (completamente funcional)
 scrapy crawl zara
 
-# Spider de Mango (en desarrollo inicial)
+# Ejecutar spider de Mango (en desarrollo)
 scrapy crawl mango
 
 # Guardar resultados en archivo JSON
-scrapy crawl zara -o zara_productos.json
-scrapy crawl mango -o mango_productos.json
+scrapy crawl zara -o productos_zara.json
 
 # Ejecutar con configuración personalizada
-scrapy crawl zara -s USER_AGENT='tu-user-agent'
 scrapy crawl zara -s DOWNLOAD_DELAY=3
+scrapy crawl zara -s USER_AGENT='custom-agent'
 ```
 
-### 🔧 Características Avanzadas Implementadas
-
-#### Spider de Zara (Avanzado)
-- ✅ **Navegación dinámica de menús**: Automatiza clicks en hamburguesa y categorías
-- ✅ **Scroll inteligente**: Carga productos de scroll infinito
-- ✅ **Manejo de pestañas múltiples**: Abre productos en nuevas pestañas
-- ✅ **Extracción de URLs**: Productos y categorías con regex patterns
-- ✅ **Sistema anti-detección**: User agents rotativos y configuración stealth
-- ⚠️ **Extracción de datos de productos**: En desarrollo
-
-#### Middlewares Personalizados
-- ✅ **BlocklistMiddleware**: Filtra URLs no deseadas (login, registro, etc.)
-- ✅ **Configuración anti-bot**: Headers personalizados y user agents
-- ✅ **Manejo de errores**: Screenshots automáticos para debugging
-
-#### Configuración del Sistema
-- ✅ **MongoDB**: Preparado para almacenamiento de datos
-- ✅ **Selenium**: Para navegación dinámica
-- ✅ **ROBOTSTXT_OBEY = False**: Para máxima flexibilidad
-
-## 🎯 Retailers Soportados
-
-### ✅ Completamente Implementados
-- **Zara** (zara.py) - Spider avanzado con:
-  - 🔄 Navegación completa de categorías (Mujer/Hombre)
-  - 🕷️ 285 líneas de código optimizado
-  - 🎯 Extracción de productos con patrones regex
-  - 🚀 Selenium + ChromeDriver integrado
-  - 📱 Manejo de scroll infinito y pestañas múltiples
-
-### 🚧 En Desarrollo Inicial
-- **Mango** (mango.py) - Spider básico:
-  - 📝 Estructura inicial creada (13 líneas)
-  - 🌐 Dominio configurado: shop.mango.com
-  - ⚠️ Requiere implementación de lógica de scraping
-
-### 🔄 Próximos en Desarrollo
-- **H&M** - Fast fashion sueco
-- **Uniqlo** - Minimalismo japonés  
-- **Pull & Bear** - Grupo Inditex
-- **Bershka** - Moda joven
-
-### 📋 Roadmap Extendido
-- **Nike** - Deportivo premium
-- **Adidas** - Deportivo lifestyle
-- **Massimo Dutti** - Elegancia premium
-- **Stradivarius** - Moda femenina
-- **Oysho** - Ropa interior y deportiva
-- **Lefties** - Outlet Inditex
-
-## 🤝 Contribución
-
-Como el proyecto está en desarrollo activo, las contribuciones son bienvenidas:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un Pull Request
-
-## 📊 Datos Recopilados
-
-### 🎯 Estructura de Datos Objetivo
-Los spiders están diseñados para extraer y normalizar:
-
-#### Información Básica del Producto
-- **Identificación**: SKU, código de producto, URL original
-- **Naming**: Nombre, descripción, marca
-- **Pricing**: Precio actual, precio original, descuentos
-- **Availability**: Stock, tallas disponibles
-
-#### Metadatos de Categorización
-- **Género**: Mujer, Hombre, Niños, Unisex
-- **Tipo de prenda**: Camiseta, Pantalón, Vestido, Zapatos, etc.
-- **Categoría**: Formal, Casual, Deportivo, Streetwear
-- **Temporada**: Primavera/Verano, Otoño/Invierno
-- **Estilo**: Old Money, Minimalist, Boho, etc.
-
-#### Assets Visuales
-- **Imágenes principales**: URLs de alta resolución
-- **Imágenes secundarias**: Diferentes ángulos y detalles
-- **Imágenes de outfit**: Combinaciones sugeridas
-- **Color palette**: Colores dominantes extraídos
-
-#### Datos Técnicos
-- **Material**: Composición de telas
-- **Cuidado**: Instrucciones de lavado
-- **Origen**: País de fabricación
-- **Sustainability**: Materiales eco-friendly
-
-### 🗄️ Almacenamiento
-- **Formato**: JSON estructurado + MongoDB
-- **Pipeline**: Limpieza y normalización automática
-- **Versionado**: Control de cambios de precios y stock
-
-## ⚡ Próximos Pasos
-
-1. **Completar extracción de datos** en spider de Zara
-2. **Implementar spiders adicionales** para otros retailers
-3. **Sistema de limpieza de datos** para normalizar información
-4. **Pipeline de almacenamiento** para base de datos
-5. **Integración con Stylos Core** para entrenamiento del modelo
-
-## 🔧 Configuración de Desarrollo
-
-### Variables de Entorno
-
+### Análisis de Datos
 ```bash
-# Configurar en tu .env (opcional)
-CHROME_DRIVER_PATH=/path/to/chromedriver
-HEADLESS_MODE=false
-DOWNLOAD_DELAY=1
-MONGODB_URI=mongodb://localhost:27017/stylos
-CONCURRENT_REQUESTS=16
+# Ejecutar utilidades de análisis
+python stylos/utils.py
+
+# Ver estadísticas de productos
+python -c "from stylos.utils import print_statistics; print_statistics()"
 ```
 
-### 🛠️ Configuración Avanzada del Sistema
+### Configuración Avanzada
+```bash
+# Habilitar logs detallados
+scrapy crawl zara -L DEBUG
 
-#### Settings.py - Configuraciones Clave
-```python
-# User Agent personalizado
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+# Usar configuración personalizada
+scrapy crawl zara -s ROBOTSTXT_OBEY=True
 
-# Robots.txt deshabilitado para flexibilidad
-ROBOTSTXT_OBEY = False
+# Configurar concurrencia
+scrapy crawl zara -s CONCURRENT_REQUESTS=8
+```
 
-# BlocklistMiddleware activo
-DOWNLOADER_MIDDLEWARES = {
-    "stylos.middlewares.BlocklistMiddleware": 544,
+## 📊 Estructura de Datos Extraídos
+
+### Información del Producto
+```json
+{
+  "url": "https://www.zara.com/co/es/producto...",
+  "name": "BLAZER OVERSIZE LINO",
+  "description": "blazer oversize confeccionado en lino...",
+  "original_price": "399.000 COP",
+  "current_price": "299.000 COP",
+  "original_price_amount": 399000.0,
+  "current_price_amount": 299000.0,
+  "currency": "COP",
+  "discount_percentage": 25,
+  "has_discount": true
 }
 ```
 
-#### Middlewares Implementados
-- **BlocklistMiddleware**: Filtra automáticamente URLs de login, registro y páginas no productivas
-- **StylosSpiderMiddleware**: Middleware base para extensiones futuras
-- **StylosDownloaderMiddleware**: Manejo de requests y responses
+### Imágenes por Color
+```json
+{
+  "images_by_color": [
+    {
+      "color": "NEGRO",
+      "images": [
+        {
+          "src": "https://static.zara.net/photos/...",
+          "alt": "BLAZER OVERSIZE LINO",
+          "img_type": "principal"
+        }
+      ]
+    }
+  ]
+}
+```
 
-### 🔍 Debugging y Monitoreo
+### Metadatos del Sistema
+```json
+{
+  "site": "zara",
+  "datetime": "2024-01-15T14:30:00",
+  "last_visited": "2024-01-15T14:30:00"
+}
+```
 
-Para debugging efectivo:
-- **Screenshots automáticos**: En `zara.py` línea ~120
-- **Logs detallados**: `self.log()` en cada paso crítico
-- **Modo no-headless**: Comentar línea 24 en `zara.py`
-- **Inspect elements**: Usar selectores XPath y CSS específicos
-- **Error handling**: Try-catch en navegación dinámica
+## 🔧 Configuración del Sistema
 
-## ⚠️ Advertencias y Mejores Prácticas
+### Middlewares Activos
+- **SeleniumMiddleware**: Navegación dinámica con Chrome
+- **BlocklistMiddleware**: Filtrado de URLs no deseadas
 
-### 🚨 Aspectos Legales y Éticos
-- **Respeta robots.txt** (actualmente deshabilitado para desarrollo)
-- **Implementa delays apropiados** para no sobrecargar servidores
-- **Usa proxies rotativos** en producción para distribución de carga
-- **Monitorea cambios** frecuentes en estructuras de sitios web
+### Pipelines Configurados
+1. **DuplicatesPipeline** (200): Filtrado de duplicados
+2. **StylosPipeline** (300): Procesamiento general  
+3. **MongoDBPipeline** (400): Almacenamiento en base de datos
 
-### 🔧 Aspectos Técnicos
-- **Chrome Driver**: Se actualiza automáticamente vía webdriver-manager
-- **Memoria**: Selenium puede consumir mucha RAM con múltiples pestañas
-- **Timeouts**: Configurados en 15-20 segundos para sitios lentos
-- **Stale Elements**: Manejados con re-búsqueda de elementos
+### Variables de Entorno Soportadas
+```bash
+MONGO_URI=mongodb://localhost:27017
+MONGO_DATABASE=stylos_scrapers
+MONGO_COLLECTION=products
+MONGO_HISTORY_COLLECTION=product_history
+MONGO_USERNAME=usuario
+MONGO_PASSWORD=contraseña
+MONGO_AUTH_SOURCE=admin
+```
 
-### 📊 Producción
-- **Escalabilidad**: Considera usar Scrapy Cloud o Scrapyd
-- **Monitoreo**: Implementa alertas para fallos de scraping
-- **Datos**: Valida la calidad de datos extraídos regularmente
-- **Backups**: Implementa versionado de datos scrapeados
+## 📈 Estado del Proyecto
 
-## 📄 Licencia
+**🟢 En Producción** - Sistema estable y funcional
 
-Este proyecto es parte del ecosistema Stylos y está en desarrollo.
+### ✅ Funcionalidades Implementadas
+- [x] Spider completo de Zara con navegación dinámica
+- [x] Sistema de middlewares personalizados
+- [x] Pipeline de datos con MongoDB
+- [x] Normalización de precios y texto
+- [x] Extracción de imágenes por variantes de color
+- [x] Sistema anti-detección con rotación de user agents
+- [x] Detección automática de cambios de precios
+- [x] Utilidades de análisis y estadísticas
+
+### 🔄 En Desarrollo
+- [ ] Spider completo de Mango
+- [ ] Integración completa con Selenium
+- [ ] Dashboard web para monitoreo
+- [ ] API REST para acceso a datos
+
+### 🎯 Próximas Funcionalidades
+- [ ] Spiders para H&M, Uniqlo, Pull & Bear
+- [ ] Sistema de alertas de cambios de precio
+- [ ] Análisis de tendencias con IA
+- [ ] Exportación a múltiples formatos
 
 ---
 
