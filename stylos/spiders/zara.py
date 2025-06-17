@@ -18,32 +18,50 @@ class ZaraSpider(scrapy.Spider):
     
     def start_requests(self):
         """
-        Inicia la navegación solicitando extracción de menú.
+        Genera las peticiones iniciales.
+
+        Si se provee el argumento '-a url=<URL_DEL_PRODUCTO>', la araña procesará
+        únicamente esa URL. De lo contrario, iniciará el proceso de extracción
+        completo desde el menú principal.
         """
-        for url in self.start_urls:
+        # --- MODO DE PRUEBA ---
+        if hasattr(self, 'url'):
+            self.logger.info(f"Ejecutando en modo de prueba para una sola URL: {self.url}")
             yield scrapy.Request(
-                url=url,
-                callback=self.parse_menu,
+                url=self.url,
+                callback=self.parse_product, # Llama directamente al parser de producto
                 meta={
                     'selenium': True,
-                    'extraction_type': 'menu'  # Especifica el tipo de extracción
+                    'extraction_type': 'product'
                 }
             )
+        # --- MODO NORMAL ---
+        else:
+            self.logger.info("Iniciando rastreo completo desde el menú principal.")
+            for url in self.start_urls:
+                yield scrapy.Request(
+                    url=url,
+                    callback=self.parse_menu,
+                    meta={
+                        'selenium': True,
+                        'extraction_type': 'menu'
+                    }
+                )
         
     def parse_menu(self, response):
         """
         Procesa URLs extraídas dinámicamente por el middleware.
         Solo recibe datos estructurados y genera nuevas peticiones.
         """
-        self.log(f"Procesando URLs de menú desde: {response.url}")
+        self.logger.info(f"Procesando URLs de menú desde: {response.url}")
         
         # Obtener URLs extraídas por el middleware
         extracted_urls = response.meta.get('extracted_urls', [])
-        self.log(f"Recibidas {len(extracted_urls)} URLs de subcategorías")
+        self.logger.info(f"Recibidas {len(extracted_urls)} URLs de subcategorías")
         
         # Procesar URLs únicas
         unique_urls = set(extracted_urls)
-        self.log(f"URLs únicas después de eliminar duplicados: {len(unique_urls)}")
+        self.logger.info(f"URLs únicas después de eliminar duplicados: {len(unique_urls)}")
         
         # Inicializar conjunto de URLs procesadas si no existe
         if not hasattr(self, 'processed_urls'):
@@ -66,7 +84,7 @@ class ZaraSpider(scrapy.Spider):
         Extrae URLs de productos de páginas de categoría.
         El middleware ya realizó el scroll infinito.
         """
-        self.log(f"Extrayendo productos de: {response.url}")
+        self.logger.info(f"Extrayendo productos de: {response.url}")
         
         # Extraer URLs de productos usando selectores estándar
         products_xpath = "//div[contains(@class, 'zds-carousel-item')]//a[@href] | //li[contains(@class, 'products-category-grid-block')]//a[@href]"
@@ -99,14 +117,14 @@ class ZaraSpider(scrapy.Spider):
         Procesa datos de producto extraídos por el middleware.
         Toda la lógica compleja se delega al ItemLoader.
         """
-        self.log(f"Procesando producto: {response.url}")
+        self.logger.info(f"Procesando producto: {response.url}")
         
         # Obtener datos estructurados del middleware
         product_data = response.meta.get('product_data', {})
         extracted_images = response.meta.get('extracted_images', {})
         
         # Crear ItemLoader para manejo automático de datos
-        loader = ItemLoader(item=ProductItem(), response=response)
+        loader = ItemLoader(item=ProductItem(), selector=response)
         
         # Datos básicos del producto (del middleware o fallback al response)
         loader.add_value('url', response.url)
@@ -115,15 +133,25 @@ class ZaraSpider(scrapy.Spider):
         if product_data.get('name'):
             loader.add_value('name', product_data['name'])
         else:
-            loader.add_xpath('name', "//h1[contains(@class, 'product-detail-info__header-name')]/text()")
+            try:
+                loader.add_xpath('name', "//h1[contains(@class, 'product-detail-info__header-name')]/text()")
+            except Exception as e:
+                self.logger.warning(f"Error extrayendo nombre con XPath: {e}")
+                # Fallback a CSS selector
+                name_css = response.css("h1[class*='product-detail-info__header-name']::text").get()
+                if name_css:
+                    loader.add_value('name', name_css.strip())
         
         # Descripción: priorizar middleware, fallback a response
         if product_data.get('description'):
             loader.add_value('description', product_data['description'])
         else:
-            description_texts = response.css("div[class='expandable-text__inner-content'] p::text").getall()
-            if description_texts:
-                loader.add_value('description', ' '.join(description_texts).strip())
+            try:
+                description_texts = response.css("div[class='expandable-text__inner-content'] p::text").getall()
+                if description_texts:
+                    loader.add_value('description', ' '.join(description_texts).strip())
+            except Exception as e:
+                self.logger.warning(f"Error extrayendo descripción: {e}")
         
         # Precios: usar datos del middleware si disponibles
         prices = product_data.get('prices', [])

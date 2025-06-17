@@ -70,9 +70,10 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "stylos.pipelines.DuplicatesPipeline": 200,    # Filtrar duplicados primero
-    "stylos.pipelines.StylosPipeline": 300,        # Procesamiento general
-    "stylos.pipelines.MongoDBPipeline": 400,       # Guardar en MongoDB al final
+    "stylos.pipelines.PricePipeline": 100,        # Procesar precios primero
+    "stylos.pipelines.MongoDBPipeline": 200,      # Guardar en MongoDB al final
+    "stylos.pipelines.DuplicatesPipeline": 300,   # Filtrar duplicados primero
+    "stylos.pipelines.StylosPipeline": 400,       # Procesamiento general
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
