@@ -174,22 +174,22 @@ PRODUCT_SELECTORS = {
 
 ## 🚀 Roadmap de Implementación
 
-### Q1 2024
+### Q1 2025
 - [x] **Completar Zara** ✅
 - [ ] **Finalizar Mango** 🚧
 - [ ] **Iniciar H&M** 📋
 
-### Q2 2024  
+### Q2 2025  
 - [ ] **Completar H&M Colombia**
 - [ ] **Pull & Bear Colombia (aprovechando código Zara)**
 - [ ] **Análisis de mercado colombiano**
 
-### Q3 2024
+### Q3 2025
 - [ ] **Completar Pull & Bear Colombia**
 - [ ] **Iniciar Bershka Colombia** 
 - [ ] **Investigación Nike/Adidas Colombia**
 
-### Q4 2024
+### Q4 2025
 - [ ] **Implementar Nike Colombia**
 - [ ] **Implementar Adidas Colombia**
 - [ ] **Optimizaciones para el mercado colombiano**
@@ -306,4 +306,4 @@ Para sugerencias de nuevos sitios, reportes de bugs o contribuciones al código:
 - 💡 **Features:** Proponer nuevos sitios o funcionalidades  
 - 🔧 **Pull Requests:** Contribuir con código
 
-**Última actualización:** Diciembre 2024
+**Última actualización:** Junio 2025

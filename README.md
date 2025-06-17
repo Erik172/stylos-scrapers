@@ -153,12 +153,47 @@ COUNTRIES = {
 ## 🚀 Instalación y Configuración
 
 ### Prerrequisitos del Sistema
-- **Python 3.7+** (recomendado 3.9+)
-- **Chrome/Chromium Browser**
+
+#### Para Docker Hub (Recomendado)
+- **Docker** y **Docker Compose** instalados
 - **MongoDB** (local o remoto)
 - **Git** para clonación del repositorio
 
-### Instalación Paso a Paso
+#### Para Modo Local
+- **Python 3.7+** (recomendado 3.9+)
+- **Chrome/Chromium Browser** instalado
+- **MongoDB** (local o remoto)
+- **Git** para clonación del repositorio
+
+### 🐳 Instalación con Docker Hub (Recomendado)
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone <url-del-repositorio>
+   cd stylos-scrapers
+   ```
+
+2. **Configurar variables de entorno**
+   ```bash
+   # Crear archivo .env con configuración para Docker
+   cp .env.example .env  # Si existe archivo de ejemplo
+   # O crear manualmente:
+   cat > .env << EOF
+   MONGO_URI=mongodb://host.docker.internal:27017
+   MONGO_DATABASE=stylos_scrapers
+   MONGO_COLLECTION=products
+   SELENIUM_MODE=remote
+   SELENIUM_HUB_URL=http://selenium-hub:4444
+   EOF
+   ```
+
+3. **Ejecutar con Docker**
+   ```bash
+   # Construir y iniciar todos los servicios
+   docker-compose up --build
+   ```
+
+### 💻 Instalación Local (Desarrollo)
 
 1. **Clonar el repositorio**
    ```bash
@@ -179,7 +214,7 @@ COUNTRIES = {
    pip install -r requirements.txt
    ```
 
-4. **Configurar variables de entorno**
+4. **Configurar variables de entorno para modo local**
    ```bash
    # Crear archivo .env en la raíz del proyecto
    MONGO_URI=mongodb://localhost:27017
@@ -188,8 +223,9 @@ COUNTRIES = {
    MONGO_USERNAME=tu_usuario
    MONGO_PASSWORD=tu_password
    
-   # Configuración de país (por defecto Colombia)
-   DEFAULT_COUNTRY=colombia
+   # Configuración de Selenium para modo LOCAL
+   SELENIUM_MODE=local                           # 'local' para Chrome local
+   # SELENIUM_HUB_URL no es necesaria en modo local
    ```
 
 ### 🌍 Configuración Multi-País
@@ -215,7 +251,65 @@ scrapy crawl zara
 
 ## 🎮 Uso y Ejecución
 
-### Comandos Básicos
+### 🐳 Ejecutar con Docker Hub (Modo Recomendado)
+
+El proyecto incluye un sistema completo con Selenium Grid para mayor escalabilidad y robustez:
+
+```bash
+# 1. Construir y ejecutar todos los servicios (Scraper + Selenium Hub + Chrome)
+docker-compose up --build
+
+# 2. Ejecutar en segundo plano
+docker-compose up -d --build
+
+# 3. Ver logs en tiempo real
+docker-compose logs -f scraper
+
+# 4. Detener todos los servicios
+docker-compose down
+
+# 5. Ver interfaz web del Hub (opcional)
+# Visita: http://localhost:4444
+```
+
+#### Arquitectura del Hub Docker
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Scraper       │───▶│  Selenium Hub   │───▶│   Chrome Node   │
+│   (Scrapy)      │    │   (Grid)        │    │   (Browser)     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### 💻 Ejecutar sin Hub (Modo Local)
+
+Para desarrollo o testing rápido, puedes ejecutar sin Docker:
+
+```bash
+# 1. Configurar variables de entorno para modo local
+echo "SELENIUM_MODE=local" >> .env
+
+# 2. Ejecutar spider normalmente
+scrapy crawl zara
+
+# 3. Para modo específico de spider
+scrapy crawl zara -a url="https://www.zara.com/co/es/producto..."
+```
+
+### 📋 Comandos Específicos por Modo
+
+#### Con Docker Hub
+```bash
+# Ejecutar spider específico
+docker-compose run scraper scrapy crawl mango
+
+# Guardar resultados
+docker-compose run scraper scrapy crawl zara -o /app/productos_zara.json
+
+# Configuración personalizada
+docker-compose run scraper scrapy crawl zara -s DOWNLOAD_DELAY=5
+```
+
+#### Sin Hub (Local)
 ```bash
 # Ejecutar spider de Zara (completamente funcional)
 scrapy crawl zara
@@ -308,16 +402,178 @@ scrapy crawl zara -s CONCURRENT_REQUESTS=8
 2. **StylosPipeline** (300): Procesamiento general  
 3. **MongoDBPipeline** (400): Almacenamiento en base de datos
 
+## 🚀 Modos de Ejecución: Hub vs Local
+
+### 🐳 Docker Hub (Recomendado para Producción)
+
+#### ✅ Ventajas
+- **Escalabilidad**: Múltiples instancias de Chrome ejecutándose simultáneamente
+- **Estabilidad**: Navegadores aislados, menor impacto de crashes
+- **Reproducibilidad**: Mismo entorno en desarrollo y producción
+- **Gestión automática**: Docker maneja la instalación y configuración de Chrome
+- **Recursos**: Mejor uso de memoria y CPU
+- **Interfaz web**: Monitor del hub en http://localhost:4444
+
+#### ⚠️ Consideraciones
+- Requiere Docker y Docker Compose instalados
+- Mayor uso de recursos del sistema inicialmente
+
+#### 🎯 Cuándo usar
+- ✅ Scraping de producción con grandes volúmenes
+- ✅ Equipos de desarrollo (entorno consistente)
+- ✅ Sistemas de CI/CD
+- ✅ Servidores sin interfaz gráfica
+
+### 💻 Modo Local (Ideal para Desarrollo)
+
+#### ✅ Ventajas
+- **Rapidez**: Inicio inmediato sin Docker
+- **Debugging**: Puedes ver el navegador funcionando (modo no-headless)
+- **Simplicidad**: No requiere Docker
+- **Desarrollo**: Ideal para testing y desarrollo de extractors
+
+#### ⚠️ Consideraciones
+- Requiere Chrome/Chromium instalado localmente
+- Una sola instancia de navegador a la vez
+- Puede ser menos estable con múltiples ejecuciones
+
+#### 🎯 Cuándo usar
+- ✅ Desarrollo y testing de nuevos extractors
+- ✅ Debugging de selectores CSS/XPath
+- ✅ Pruebas rápidas con un solo producto
+- ✅ Desarrollo en máquinas locales
+
+## 🔄 Cambiar entre Modos
+
+### Cambiar a Docker Hub
+```bash
+# 1. Actualizar .env
+echo "SELENIUM_MODE=remote" >> .env
+echo "SELENIUM_HUB_URL=http://selenium-hub:4444" >> .env
+
+# 2. Ejecutar con Docker
+docker-compose up --build
+```
+
+### Cambiar a Local
+```bash
+# 1. Actualizar .env
+echo "SELENIUM_MODE=local" >> .env
+
+# 2. Ejecutar normalmente
+scrapy crawl zara
+```
+
 ### Variables de Entorno Soportadas
+
+#### Configuración General
 ```bash
 MONGO_URI=mongodb://localhost:27017
 MONGO_DATABASE=stylos_scrapers
 MONGO_COLLECTION=products
-MONGO_HISTORY_COLLECTION=product_history
 MONGO_USERNAME=usuario
 MONGO_PASSWORD=contraseña
-MONGO_AUTH_SOURCE=admin
+DEFAULT_COUNTRY=colombia
 ```
+
+#### Configuración Selenium
+```bash
+# Para Docker Hub
+SELENIUM_MODE=remote
+SELENIUM_HUB_URL=http://selenium-hub:4444
+
+# Para Local
+SELENIUM_MODE=local
+# SELENIUM_HUB_URL no requerida
+```
+
+## 📊 Comparación de Modos
+
+| Característica | Docker Hub 🐳 | Local 💻 |
+|----------------|---------------|----------|
+| **Instalación** | Docker requerido | Python + Chrome |
+| **Tiempo inicio** | ~30s (primera vez) | ~5s |
+| **Escalabilidad** | Múltiples Chrome | Una instancia |
+| **Debugging** | Logs en terminal | Browser visible |
+| **Recursos** | Mayor memoria inicial | Menor overhead |
+| **Estabilidad** | Alta (aislamiento) | Media |
+| **Producción** | ✅ Recomendado | ❌ No recomendado |
+| **Desarrollo** | ✅ Bueno | ✅ Excelente |
+| **CI/CD** | ✅ Perfecto | ❌ Limitado |
+
+## 🛠️ Archivos de Configuración
+
+### docker-compose.yml
+```yaml
+version: '3.8'
+
+services:
+  scraper:
+    build: .
+    command: scrapy crawl zara
+    env_file:
+      - ./.env
+    volumes:
+      - ./stylos:/app/stylos
+    depends_on:
+      - selenium-hub
+      - chrome
+
+  selenium-hub:
+    image: selenium/hub:4.22.0
+    ports:
+      - "4444:4444"
+
+  chrome:
+    image: selenium/node-chrome:4.22.0
+    shm_size: '2g'
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - NODE_MAX_SESSIONS=5
+      - NODE_MAX_INSTANCES=5
+```
+
+### Dockerfile
+```docker
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./stylos /app/stylos
+```
+
+## 📈 Estado del Proyecto
+
+**🟢 En Producción** - Sistema estable y funcional con arquitectura de hub
+
+### ✅ Funcionalidades Implementadas
+- [x] Sistema dual: Docker Hub + Modo Local
+- [x] Spider completo de Zara con navegación dinámica  
+- [x] Selenium Grid con escalabilidad automática
+- [x] Sistema de middlewares personalizados
+- [x] Pipeline de datos con MongoDB
+- [x] Normalización de precios y texto
+- [x] Extracción de imágenes por variantes de color
+- [x] Sistema anti-detección con rotación de user agents
+- [x] Detección automática de cambios de precios
+- [x] Interfaz web para monitoreo del hub (puerto 4444)
+
+### 🚧 En Desarrollo
+- [ ] Spider completo de Mango
+- [ ] Optimización de recursos Docker
+- [ ] Dashboard de monitoreo avanzado
+
+**Última actualización:** Diciembre 2024
 
 ## 📈 Estado del Proyecto
 
@@ -496,4 +752,4 @@ classDiagram
 
 **Desarrollado con ❤️ para el futuro de la moda personalizada**
 
-> **Nota**: Este es un proyecto en desarrollo activo. La documentación y funcionalidades pueden cambiar frecuentemente. 
+> **Nota**: Este es un proyecto en desarrollo activo con sistema dual Docker Hub + Local. La documentación y funcionalidades pueden cambiar frecuentemente. 

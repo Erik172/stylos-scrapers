@@ -24,6 +24,10 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+# Lee la URL del hub desde la variable de entorno
+SELENIUM_HUB_URL = os.getenv('SELENIUM_HUB_URL')
+SELENIUM_MODE = os.getenv('SELENIUM_MODE', 'remote') # 'remote' es el valor por defecto, local si no queremos usar el hub
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
