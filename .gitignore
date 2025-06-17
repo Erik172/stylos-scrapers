@@ -1,6 +1,15 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
+zara*.json
+mango*.json
+hm*.json
+bershka*.json
+stradivarius*.json
+pullandbear*.json
+nike*.json
+adidas*.json
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

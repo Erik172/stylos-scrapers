@@ -9,6 +9,9 @@
 
 Stylos Scraper es una solución profesional de web scraping diseñada específicamente para la extracción de datos de sitios de e-commerce de moda. Utiliza tecnologías avanzadas como Selenium y Playwright para navegar sitios web dinámicos y extraer información estructurada de productos, precios e imágenes.
 
+🇨🇴 **Enfoque Inicial:** Comenzamos con el mercado colombiano como piloto
+🌍 **Expansión Planificada:** Arquitectura diseñada para escalabilidad internacional
+
 El proyecto forma parte del ecosistema **Stylos**, una plataforma de inteligencia artificial que analiza tendencias de moda y genera recomendaciones personalizadas basadas en diferentes estilos:
 
 - 💼 **Old Money** - Elegancia atemporal
@@ -83,32 +86,69 @@ stylos-scrapers/
 └── README.md                      # Documentación
 ```
 
-## 🏪 Retailers Soportados
+## 🏪 Retailers Soportados (Colombia 🇨🇴)
 
 ### ✅ Completamente Implementado
-**Zara (zara.py)**
+**Zara Colombia (zara.py)**
+- 🌐 **URL:** https://www.zara.com/co/es/
 - 🔄 **Navegación completa**: Categorías de Mujer/Hombre con subcategorías
 - 🕷️ **432 líneas de código**: Lógica compleja de navegación y extracción
-- 🎯 **Extracción avanzada**: Productos, precios, imágenes por color
+- 🎯 **Extracción avanzada**: Productos, precios en COP, imágenes por color
 - 🚀 **Selenium integrado**: ChromeDriver con configuración anti-bot
 - 📱 **Scroll infinito**: Carga automática de productos lazy-loaded
 - 🖼️ **Imágenes por color**: Extracción organizada por variantes
 
 ### 🚧 En Desarrollo
-**Mango (mango.py)**
+**Mango Colombia (mango.py)**
+- 🌐 **URL:** https://shop.mango.com/co/
 - 📝 **Estructura base**: Spider básico inicializado
-- 🌐 **Dominio configurado**: shop.mango.com
-- ⚠️ **Pendiente**: Implementación de lógica de scraping
+- ⚠️ **Pendiente**: Implementación de lógica de scraping completa
 
-### 📋 Roadmap de Retailers
+### 📋 Roadmap de Retailers Colombia
 ```
-H&M          → Fast fashion sueco
-Uniqlo       → Minimalismo japonés  
-Pull & Bear  → Grupo Inditex
-Bershka      → Moda joven
-Nike         → Deportivo premium
-Adidas       → Deportivo lifestyle
+H&M Colombia       → https://www2.hm.com/es_co/
+Pull & Bear CO     → https://www.pullandbear.com/co/  
+Bershka Colombia   → https://www.bershka.com/co/
+Nike Colombia      → https://www.nike.com/co/
+Adidas Colombia    → https://www.adidas.co/
 ```
+
+## 🌍 Expansión Internacional
+
+### Arquitectura Multi-País
+El sistema está construido para expandirse fácilmente a otros mercados:
+
+```python
+# Configuración de países (ejemplo)
+COUNTRIES = {
+    'colombia': {'currency': 'COP', 'domain': '.co', 'lang': 'es_CO'},
+    'mexico': {'currency': 'MXN', 'domain': '.mx', 'lang': 'es_MX'},
+    'peru': {'currency': 'PEN', 'domain': '.pe', 'lang': 'es_PE'}
+}
+
+# Uso: scrapy crawl zara -a country=mexico
+```
+
+### Ventajas de la Arquitectura
+- ✅ **Reutilización de código**: Los extractors funcionan en cualquier país
+- ✅ **Configuración simple**: Solo cambiar URLs y parámetros de moneda
+- ✅ **Base de datos escalable**: MongoDB maneja múltiples mercados
+- ✅ **Pipelines adaptables**: Procesamiento automático de monedas regionales
+
+### Mercados Objetivo Futuros
+1. 🇲🇽 **México** - Mercado grande, mismo idioma
+2. 🇵🇪 **Perú** - Región andina, similar a Colombia  
+3. 🇨🇱 **Chile** - Mercado desarrollado
+4. 🇦🇷 **Argentina** - Gran potencial
+5. 🇪🇸 **España** - Mercado europeo hispanohablante
+
+### ¿Por qué empezar con Colombia? 🇨🇴
+- **Mercado emergente**: Gran crecimiento en e-commerce
+- **Idioma español**: Facilita el desarrollo y testing
+- **Retailers globales**: Todos los grandes tienen presencia local
+- **Menos competencia**: Menor saturación de herramientas similares
+- **Moneda estable**: COP facilita el manejo de precios
+- **Zona horaria**: UTC-5 conveniente para desarrollo
 
 ## 🚀 Instalación y Configuración
 
@@ -147,7 +187,31 @@ Adidas       → Deportivo lifestyle
    MONGO_COLLECTION=products
    MONGO_USERNAME=tu_usuario
    MONGO_PASSWORD=tu_password
+   
+   # Configuración de país (por defecto Colombia)
+   DEFAULT_COUNTRY=colombia
    ```
+
+### 🌍 Configuración Multi-País
+Para cambiar de país, simplemente modifica las URLs en los spiders:
+
+```python
+# En stylos/spiders/zara.py
+start_urls = [
+    "https://www.zara.com/co/",    # Colombia (actual)
+    # "https://www.zara.com/mx/",  # México
+    # "https://www.zara.com/pe/",  # Perú
+]
+```
+
+**Ejecutar en diferentes países:**
+```bash
+# Colombia (configuración actual)
+scrapy crawl zara
+
+# Para cambiar a otro país, editar las URLs en el spider
+# y ejecutar normalmente - todo el resto funciona igual
+```
 
 ## 🎮 Uso y Ejecución
 
