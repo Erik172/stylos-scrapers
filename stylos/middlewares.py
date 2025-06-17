@@ -16,11 +16,21 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from fake_useragent import UserAgent
+import time
+import logging
+
+# Importar sistema de extractors (esto registra automáticamente todos los extractors)
+from stylos.extractors.registry import ExtractorRegistry
 
 class SeleniumMiddleware:
+    """
+    Middleware centralizado para toda la lógica de extracción con Selenium.
+    El spider solo especifica el tipo de extracción requerida y recibe datos estructurados.
+    """
+    
     def __init__(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless") # Actívalo en producción
+        # chrome_options.add_argument("--headless") # Actívalo en producción
         chrome_options.add_argument('--window-size=1920x1080')
         chrome_options.add_argument(f'user-agent={UserAgent().random}')
         chrome_options.add_argument('--no-sandbox')
@@ -31,10 +41,10 @@ class SeleniumMiddleware:
         chrome_options.add_argument("--blink-settings=imagesEnabled=false") # Deshabilitar imágenes
         
         self.driver = webdriver.Chrome(options=chrome_options)
+        self.logger = logging.getLogger(__name__)
 
     @classmethod
     def from_crawler(cls, crawler):
-        # Este método es usado por Scrapy para crear tus middlewares.
         s = cls()
         crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
         return s
@@ -47,21 +57,37 @@ class SeleniumMiddleware:
         spider.log(f"Procesando con Selenium: {request.url}")
         self.driver.get(request.url)
 
-        # Si una función de espera está definida en meta, la ejecutamos.
-        # Esto nos da control sobre qué esperar en cada página.
-        if request.meta.get('wait_for'):
-            wait_function = request.meta['wait_for']
-            wait_function(self.driver)
-        else:
-            # Espera por defecto
+        # Obtener el extractor específico para este spider
+        extraction_type = request.meta.get('extraction_type', 'default')
+        extracted_data = {}
+        
+        try:
+            # Usar el sistema de extractors específicos por sitio
+            extractor = ExtractorRegistry.get_extractor(spider.name, self.driver, spider)
+            
+            if extraction_type == 'menu':
+                extracted_data = extractor.extract_menu_urls()
+            elif extraction_type == 'category':
+                extracted_data = extractor.extract_category_data()
+            elif extraction_type == 'product':
+                extracted_data = extractor.extract_product_data()
+            else:
+                # Espera por defecto
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "body"))
+                )
+                
+        except ValueError as e:
+            spider.log(f"Error: {e}. Usando extracción por defecto.", 'warning')
+            # Fallback a espera estándar si no hay extractor registrado
             WebDriverWait(self.driver, 15).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
-
-        # Devuelve el HTML renderizado para que Scrapy lo procese
+        except Exception as e:
+            spider.log(f"Error en extracción {extraction_type}: {e}")
+            
+        # Crear el response con datos extraídos
         body = self.driver.page_source
-        
-        # Crear el response
         response = HtmlResponse(
             self.driver.current_url,
             body=body,
@@ -69,21 +95,12 @@ class SeleniumMiddleware:
             request=request
         )
         
-        # Si el driver tiene URLs extraídas (del método wait_for_menu), las pasamos al response
-        if hasattr(self.driver, 'extracted_urls'):
-            response.meta['extracted_urls'] = self.driver.extracted_urls
-            spider.log(f"Pasando {len(self.driver.extracted_urls)} URLs extraídas al response")
-            # Limpiar las URLs del driver para la próxima vez
-            delattr(self.driver, 'extracted_urls')
-            
-        # Si el driver tiene imágenes extraídas (del método wait_for_product), las pasamos al response
-        if hasattr(self.driver, 'extracted_images'):
-            response.meta['extracted_images'] = self.driver.extracted_images
-            spider.log(f"Pasando imágenes de {len(self.driver.extracted_images)} colores al response")
-            # Limpiar las imágenes del driver para la próxima vez
-            delattr(self.driver, 'extracted_images')
+        # Pasar todos los datos extraídos al response.meta
+        response.meta.update(extracted_data)
         
         return response
+
+
 
     def spider_closed(self):
         self.driver.quit()
@@ -127,7 +144,7 @@ class StylosSpiderMiddleware:
     def process_start_requests(self, start_requests, spider):
         # Called with the start requests of the spider, and works
         # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
+        # that it doesn't have a response associated.
 
         # Must return only requests (not items).
         for r in start_requests:

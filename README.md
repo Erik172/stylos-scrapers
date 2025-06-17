@@ -281,6 +281,153 @@ MONGO_AUTH_SOURCE=admin
 - [ ] Análisis de tendencias con IA
 - [ ] Exportación a múltiples formatos
 
+## 🏗️ Arquitectura Técnica: Sistema de Extractors
+
+### 🎯 Problema Resuelto
+
+El desafío principal era que cada sitio web tiene **selectores y lógica de navegación completamente diferentes**. Un middleware hardcodeado para Zara no funcionaría para Mango, H&M, etc.
+
+**Solución**: **Patrón Strategy** con extractors especializados por sitio web.
+
+### 🧠 Concepto del Sistema
+
+Cada sitio web tiene su propio "extractor" especializado que implementa la misma interfaz pero con lógica específica. El middleware se vuelve genérico y solo delega la extracción al extractor correcto.
+
+```mermaid
+graph TD
+    A["🕷️ Spider Solicita Extracción"] --> B["⚙️ SeleniumMiddleware"]
+    B --> C["📋 ExtractorRegistry"]
+    C --> D{"🤔 ¿Qué spider?"}
+    D -->|"name = 'zara'"| E["🟦 ZaraExtractor"]
+    D -->|"name = 'mango'"| F["🟧 MangoExtractor"]
+    D -->|"name = 'hm'"| G["🟩 HMExtractor"]
+    E --> H["🔧 Lógica específica de Zara<br/>• Menú hamburguesa<br/>• Categorías MUJER/HOMBRE<br/>• Selectores específicos"]
+    F --> I["🔧 Lógica específica de Mango<br/>• Menú directo<br/>• Botones load-more<br/>• Swatches de color"]
+    G --> J["🔧 Lógica específica de H&M<br/>• API endpoints<br/>• Paginación<br/>• Selectores únicos"]
+    H --> K["📦 Datos Estructurados"]
+    I --> K
+    J --> K
+    K --> L["🎯 Spider Recibe Datos<br/>{'extracted_urls': [...]}"]
+```
+
+### 🔧 Componentes del Sistema
+
+#### **1. Extractor Base Abstracto**
+```python
+# stylos/extractors/__init__.py
+class BaseExtractor(ABC):
+    """Define la interfaz común para todos los extractors"""
+    
+    @abstractmethod
+    def extract_menu_urls(self): pass
+    
+    @abstractmethod  
+    def extract_product_data(self): pass
+```
+
+#### **2. Registry con Auto-registro**
+```python
+# Usando un decorador, cada extractor se registra automáticamente
+@register_extractor('zara')
+class ZaraExtractor(BaseExtractor):
+    # Lógica de Zara
+    pass
+
+@register_extractor('mango')
+class MangoExtractor(BaseExtractor):
+    # Lógica de Mango
+    pass
+```
+
+#### **3. Middleware Genérico**
+```python
+# El middleware ahora es agnóstico del sitio
+def process_request(self, request, spider):
+    # Delega la extracción al extractor correcto
+    extractor = ExtractorRegistry.get_extractor(spider.name, self.driver, spider)
+    extracted_data = extractor.extract_menu_urls()
+```
+
+### 🔄 Flujo de Ejecución Completo
+
+```mermaid
+sequenceDiagram
+    participant S as Spider
+    participant M as SeleniumMiddleware
+    participant R as ExtractorRegistry
+    participant Z as ZaraExtractor
+    participant D as WebDriver
+
+    S->>M: Request con extraction_type='menu'
+    M->>R: get_extractor('zara', driver, spider)
+    R->>Z: Crear ZaraExtractor(driver, spider)
+    Z-->>R: Instancia de ZaraExtractor
+    R-->>M: ZaraExtractor instance
+    M->>Z: extract_menu_urls()
+    Z->>D: Ejecutar lógica específica de Zara
+    D-->>Z: HTML renderizado + interacciones
+    Z-->>M: {'extracted_urls': [...]}
+    M-->>S: Response con datos estructurados
+```
+
+### 🎮 Ejemplo Práctico: Diferencias por Sitio
+
+#### **Zara vs Mango - Mismo resultado, lógica diferente:**
+
+```python
+# 🔴 ZARA: Menú hamburguesa complejo
+@register_extractor('zara')
+class ZaraExtractor(BaseExtractor):
+    def extract_menu_urls(self):
+        # 1. Buscar botón hamburguesa con múltiples selectores
+        # 2. Navegar por categorías MUJER/HOMBRE
+
+# 🟠 MANGO: Menú directo diferente  
+@register_extractor('mango')
+class MangoExtractor(BaseExtractor):
+    def extract_menu_urls(self):
+        # 1. Buscar botón de menú (selectores diferentes)
+        # 2. Extraer enlaces directamente (estructura diferente)
+```
+
+### 🏗️ Arquitectura del Sistema de Extractors
+
+```mermaid
+classDiagram
+    class BaseExtractor {
+        <<abstract>>
+        +driver: WebDriver
+        +spider: Spider
+        +extract_menu_urls()* dict
+        +extract_category_data()* dict
+        +extract_product_data()* dict
+    }
+    class ExtractorRegistry {
+        +register(spider_name, extractor_class)$ void
+        +get_extractor(spider_name, driver, spider)$ BaseExtractor
+    }
+    class ZaraExtractor {
+        +extract_menu_urls() dict
+    }
+    class MangoExtractor {
+        +extract_menu_urls() dict
+    }
+    class SeleniumMiddleware {
+        +process_request() HtmlResponse
+    }
+    BaseExtractor <|-- ZaraExtractor
+    BaseExtractor <|-- MangoExtractor
+    ExtractorRegistry --> BaseExtractor : gets
+    SeleniumMiddleware --> ExtractorRegistry : uses
+```
+
+### 🚀 Ventajas del Sistema
+
+- **📈 Escalabilidad Extrema**: Agregar un nuevo sitio es tan simple como crear un nuevo archivo de extractor.
+- **🧪 Testing Individual**: Cada extractor se puede probar de forma aislada.
+- **🔧 Mantenimiento Aislado**: Los cambios en un sitio no afectan a otros.
+- **🛡️ Robustez**: El sistema es predecible y tiene un fallback si no encuentra un extractor.
+
 ---
 
 **Desarrollado con ❤️ para el futuro de la moda personalizada**
