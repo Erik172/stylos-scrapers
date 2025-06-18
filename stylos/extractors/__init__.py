@@ -18,7 +18,7 @@ class BaseExtractor(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
     
     @abstractmethod
-    def extract_menu_urls(self):
+    def extract_menu_data(self):
         """Extrae URLs del menú de navegación principal."""
         pass
     

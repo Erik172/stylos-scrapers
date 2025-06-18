@@ -25,18 +25,23 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 ROBOTSTXT_OBEY = False
 
 # Lee la URL del hub desde la variable de entorno
-SELENIUM_HUB_URL = os.getenv('SELENIUM_HUB_URL')
+SELENIUM_HUB_URL = os.getenv('SELENIUM_HUB_URL', 'http://localhost:4444')
 SELENIUM_MODE = os.getenv('SELENIUM_MODE', 'remote') # 'remote' es el valor por defecto, local si no queremos usar el hub
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+# Número máximo de peticiones que Scrapy puede tener activas a la vez.
+# Un buen punto de partida es (NÚMERO_DE_NODES_CHROME * NODE_MAX_SESSIONS)
+# Si tienes 5 nodos chrome con 5 sesiones cada uno, podrías poner 25.
+CONCURRENT_REQUESTS = 10
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
+# Número de peticiones concurrentes por dominio.
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -80,16 +85,19 @@ ITEM_PIPELINES = {
     "stylos.pipelines.StylosPipeline": 400,       # Procesamiento general
 }
 
+# Activa el AutoThrottle para ajustar la velocidad dinámicamente según la carga
+# del servidor de destino y el de Scrapy. Es un "control de crucero" inteligente.
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-#AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-#AUTOTHROTTLE_START_DELAY = 5
+AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
-#AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
 #AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 16.0 # Intentará mantener esta concurrencia promedio
 # Enable showing throttling stats for every response received:
 #AUTOTHROTTLE_DEBUG = False
 

@@ -1,28 +1,40 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  # 1. SERVICIO SCRAPER: Contiene tu código Scrapy
-  scraper:
-    build: .  # Usa el Dockerfile en la carpeta actual para construir la imagen
-    command: scrapy crawl zara # Comando para iniciar la araña
-    env_file:
-      - ./.env # Carga las variables de entorno desde el archivo .env
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ./app/startup.sh
     volumes:
-      # Monta tu código local. Te permite cambiar el código sin reconstruir la imagen (ideal para desarrollo)
       - ./stylos:/app/stylos
-    depends_on:
-      - selenium-hub
-      - chrome
-
-  # 2. SERVICIO SELENIUM HUB: El cerebro que gestiona los navegadores
-  selenium-hub:
-    image: selenium/hub:4.22.0 # Es buena práctica fijar una versión
+      - ./app:/app/app
     ports:
-      # Expone el puerto para que puedas ver la Grid UI en http://localhost:4444
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - scrapyd
+      - selenium-hub
+    environment:
+      - SCRAPYD_URL=http://scrapyd:6800
+      - PYTHONPATH=/app
+
+  scrapyd:
+    build:
+      context: .
+      dockerfile: Dockerfile.scrapyd
+    ports:
+      - "6800:6800"
+    environment:
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+      - SELENIUM_MODE=remote
+
+  selenium-hub:
+    image: selenium/hub:4.22.0
+    ports:
       - "4444:4444"
 
-  # 3. SERVICIO CHROME NODE: El navegador que ejecutará las tareas
   chrome:
     image: selenium/node-chrome:4.22.0
     shm_size: '2g' # Aumenta la memoria compartida para evitar crashes del navegador
@@ -32,6 +44,3 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      # Para limitar sesiones por navegador (opcional pero recomendado)
-      - NODE_MAX_SESSIONS=5
-      - NODE_MAX_INSTANCES=5
