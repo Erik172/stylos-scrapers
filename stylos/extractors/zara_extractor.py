@@ -32,12 +32,20 @@ class ZaraExtractor(BaseExtractor):
     
     # --- Selectores y Configuración Específica para Zara ---
     # Se usan múltiples selectores para el menú hamburguesa para dar robustez
-    # frente a posibles cambios en el frontend del sitio.
+    # frente a posibles cambios en el frontend del sitio y diferencias de idioma.
     HAMBURGER_SELECTORS: List[str] = [
-        "//button[@aria-label='Abrir menú']",
+        "//button[@aria-label='Abrir menú']",  # Español
+        "//button[@aria-label='Open menu']",   # Inglés
         "//button[@aria-label='Abrir menú']//*[name()='svg']",
+        "//button[@aria-label='Open menu']//*[name()='svg']",
         ".layout-header-icon__icon",
         "//button[contains(@class, 'layout-header-icon')]",
+        "//button[contains(@class, 'header-menu')]",
+        "[data-testid='hamburger-menu']",
+        "[data-qa='hamburger-menu']",
+        ".hamburger-menu",
+        "//button[contains(@class, 'menu-toggle')]",
+        "//button[@role='button'][contains(@class, 'layout-header')]",
     ]
     
     MENU_PANEL_XPATH = "//div[@aria-label='Menú de categorías']"
@@ -76,7 +84,7 @@ class ZaraExtractor(BaseExtractor):
         ]
     }
 
-    def extract_menu_urls(self) -> Dict[str, List[str]]:
+    def extract_menu_data(self) -> Dict[str, List[str]]:
         """
         Extrae todas las URLs de las subcategorías desde el menú principal.
 

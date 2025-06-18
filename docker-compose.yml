@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ./app/startup.sh
+    volumes:
+      - ./stylos:/app/stylos
+      - ./app:/app/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - scrapyd
+      - selenium-hub
+    environment:
+      - SCRAPYD_URL=http://scrapyd:6800
+      - PYTHONPATH=/app
+
+  scrapyd:
+    build:
+      context: .
+      dockerfile: Dockerfile.scrapyd
+    ports:
+      - "6800:6800"
+    environment:
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+      - SELENIUM_MODE=remote
+
+  selenium-hub:
+    image: selenium/hub:4.22.0
+    ports:
+      - "4444:4444"
+
+  chrome:
+    image: selenium/node-chrome:4.22.0
+    shm_size: '2g' # Aumenta la memoria compartida para evitar crashes del navegador
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
