@@ -1,0 +1,9 @@
+# .bumpversion.toml
+[tool.bumpversion]
+current_version = "1.0.0"
+commit = true
+tag = true
+message = "Bump version {current_version} → {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "stylos/__version__.py" 

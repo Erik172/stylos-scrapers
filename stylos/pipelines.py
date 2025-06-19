@@ -16,28 +16,46 @@ class PricePipeline:
     Pipeline para procesar y enriquecer los datos de precios de un item.
     
     Esta pipeline debe ejecutarse ANTES de las pipelines de base de datos.
+    Procesa la lista raw_prices y determina precio original vs actual.
     """
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
+        
+        # --- Procesamiento de Lista de Precios ---
+        raw_prices = adapter.get('raw_prices', [])
+        currency = adapter.get('currency', None)
+        
+        if raw_prices:
+            price_info = self._process_price_list(raw_prices)
+            
+            # Asignar precio original y actual
+            adapter['original_price'] = price_info['original_price']
+            adapter['current_price'] = price_info['current_price']
+            adapter['has_discount'] = price_info['has_discount']
+        else:
+            # Si no hay precios, usar valores por defecto
+            adapter['original_price'] = None
+            adapter['current_price'] = None
+            adapter['has_discount'] = False
         
         # --- Normalización de Precios ---
         original_price_text = adapter.get('original_price')
         current_price_text = adapter.get('current_price')
         
         if original_price_text:
-            price_data = normalize_price(original_price_text)
-            adapter['original_price_amount'] = price_data['amount']
+            price_data = normalize_price(original_price_text, currency)
+            adapter['original_price'] = price_data['amount']
             adapter['currency'] = price_data['currency'] # Asigna la moneda del precio original
             
         if current_price_text:
-            price_data = normalize_price(current_price_text)
-            adapter['current_price_amount'] = price_data['amount']
+            price_data = normalize_price(current_price_text, currency)
+            adapter['current_price'] = price_data['amount']
             if not adapter.get('currency'):
                 adapter['currency'] = price_data['currency'] # Si no había moneda, usa la del precio actual
 
         # --- Cálculo de Descuentos ---
-        opa = adapter.get('original_price_amount')
-        cpa = adapter.get('current_price_amount')
+        opa = adapter.get('original_price')
+        cpa = adapter.get('current_price')
 
         if opa is not None and cpa is not None and opa > cpa:
             adapter['has_discount'] = True
@@ -50,6 +68,49 @@ class PricePipeline:
             
         return item
     
+    def _process_price_list(self, prices):
+        """
+        Procesa lista de precios y determina cuál es original y cuál es actual.
+        Lógica: Si hay múltiples precios, el mayor es original y el menor es actual.
+        """
+        price_info = {
+            'original_price': None,
+            'current_price': None,
+            'has_discount': False
+        }
+        
+        if not prices:
+            return price_info
+            
+        if len(prices) == 1:
+            # Un solo precio - sin descuento
+            price_info['original_price'] = prices[0]
+            price_info['current_price'] = prices[0]
+            price_info['has_discount'] = False
+            
+        elif len(prices) >= 2:
+            # Múltiples precios - determinar por valor numérico
+            normalized_prices = []
+            for price_text in prices:
+                norm = normalize_price(price_text)
+                if norm['amount'] is not None:
+                    normalized_prices.append((price_text, norm['amount']))
+            
+            if len(normalized_prices) >= 2:
+                # Ordenar por monto (mayor a menor)
+                normalized_prices.sort(key=lambda x: x[1], reverse=True)
+                
+                price_info['original_price'] = normalized_prices[0][0]  # Mayor precio (original)
+                price_info['current_price'] = normalized_prices[1][0]   # Menor precio (actual)
+                price_info['has_discount'] = True
+            else:
+                # Fallback: si no se pudieron normalizar, usar el primero
+                price_info['original_price'] = prices[0]
+                price_info['current_price'] = prices[0]
+                price_info['has_discount'] = False
+        
+        return price_info
+
 # --- CLASE BASE PARA LA CONEXIÓN A MONGODB ---
 
 class MongoPipelineBase:

@@ -54,25 +54,20 @@ class ProductItem(scrapy.Item):
         input_processor=MapCompose(lambda text: normalize_text(text, case='lower')),
         output_processor=TakeFirst()
     )
-    # El precio original en formato de texto, tal como aparece en el sitio. Se usa como base para los cálculos.
-    original_price = scrapy.Field(
-        output_processor=TakeFirst()
-    )
-    # El precio actual o de oferta en formato de texto.
-    current_price = scrapy.Field(
-        output_processor=TakeFirst()
-    )
+
+    # Lista de precios extraídos sin procesar (será procesada por PricePipeline)
+    raw_prices = scrapy.Field()
 
     # --------------------------------------------------------------------
     # --- Campos Enriquecidos (Calculados y Poblados por las Pipelines)
     # --------------------------------------------------------------------
 
     # El valor numérico (float) del precio original, procesado por PricePipeline.
-    original_price_amount = scrapy.Field(
+    original_price = scrapy.Field(
         output_processor=TakeFirst()
     )
     # El valor numérico (float) del precio actual, procesado por PricePipeline.
-    current_price_amount = scrapy.Field(
+    current_price = scrapy.Field(
         output_processor=TakeFirst()
     )
     # El código de la moneda (ej: 'COP', 'USD'), extraído del texto del precio.

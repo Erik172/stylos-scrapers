@@ -77,8 +77,6 @@ def sample_item_class():
         last_visited = Field()
 
         # --- Campos generados por las Pipelines ---
-        original_price_amount = Field()
-        current_price_amount = Field()
         currency = Field()
         has_discount = Field()
         discount_amount = Field()

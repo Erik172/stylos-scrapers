@@ -153,28 +153,15 @@ class ZaraSpider(scrapy.Spider):
             except Exception as e:
                 self.logger.warning(f"Error extrayendo descripción: {e}")
         
-        # Precios: usar datos del middleware si disponibles
+        # Precios: extraer como lista simple, el pipeline se encarga del resto
         prices = product_data.get('prices', [])
         if not prices:
             # Fallback a extracción del response
             prices = response.css("div.product-detail-info__price-amount.price span.money-amount__main::text").getall()
             prices = [p.strip() for p in prices if p.strip()]
         
-        # Procesamiento de precios simplificado
-        price_info = self._process_prices(prices)
-        
-        # Aplicar precios al loader (ItemLoader aplicará procesadores automáticamente)
-        loader.add_value('original_price', price_info['original_price'])
-        loader.add_value('current_price', price_info['current_price'])
-        loader.add_value('original_price_amount', price_info['original_price'])
-        loader.add_value('current_price_amount', price_info['current_price'])
-        loader.add_value('currency', price_info['original_price'])
-        loader.add_value('has_discount', price_info['has_discount'])
-        
-        # Calcular descuentos si hay diferencia de precios
-        if price_info['has_discount'] and price_info['discount_data']:
-            loader.add_value('discount_percentage', price_info['discount_data']['percentage'])
-            loader.add_value('discount_amount', price_info['discount_data']['amount'])
+        # Enviar precios como lista simple al pipeline
+        loader.add_value('raw_prices', prices)
         
         # Procesar imágenes extraídas por el middleware
         images_by_color = self._process_images(extracted_images, response, product_data)
@@ -187,64 +174,6 @@ class ZaraSpider(scrapy.Spider):
         
         # Generar item final con todos los procesadores aplicados
         yield loader.load_item()
-    
-    def _process_prices(self, prices):
-        """
-        Procesa lista de precios y determina original/actual y descuentos.
-        Lógica centralizada y simplificada.
-        """
-        price_info = {
-            'original_price': None,
-            'current_price': None,
-            'has_discount': False,
-            'discount_data': None
-        }
-        
-        if not prices:
-            return price_info
-        
-        if len(prices) == 1:
-            # Un solo precio - sin descuento
-            price_info['original_price'] = prices[0]
-            price_info['current_price'] = prices[0]
-            price_info['has_discount'] = False
-        elif len(prices) >= 2:
-            # Múltiples precios - determinar cuál es cuál por valor numérico
-            from stylos.items import normalize_price
-            
-            normalized_prices = []
-            for price_text in prices:
-                norm = normalize_price(price_text)
-                if norm['amount'] is not None:
-                    normalized_prices.append((price_text, norm))
-            
-            if len(normalized_prices) >= 2:
-                # Ordenar por monto (mayor a menor)
-                normalized_prices.sort(key=lambda x: x[1]['amount'], reverse=True)
-                
-                price_info['original_price'] = normalized_prices[0][0]  # Mayor precio
-                price_info['current_price'] = normalized_prices[1][0]   # Menor precio
-                price_info['has_discount'] = True
-                
-                # Calcular descuento
-                orig_amount = normalized_prices[0][1]['amount']
-                curr_amount = normalized_prices[1][1]['amount']
-                
-                if orig_amount > 0:
-                    discount_percentage = ((orig_amount - curr_amount) / orig_amount) * 100
-                    discount_amount = orig_amount - curr_amount
-                    
-                    price_info['discount_data'] = {
-                        'percentage': round(discount_percentage, 2),
-                        'amount': round(discount_amount, 2)
-                    }
-            else:
-                # Fallback si no se pudieron normalizar
-                price_info['original_price'] = prices[0]
-                price_info['current_price'] = prices[0]
-                price_info['has_discount'] = False
-        
-        return price_info
     
     def _process_images(self, extracted_images, response, product_data):
         """

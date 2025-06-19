@@ -5,15 +5,28 @@
 <!-- GIF -->
 ![Zara Scraper Demo](media/zara-demo.gif)
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/erik172/stylos-scrapers)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
+[![Scrapy](https://img.shields.io/badge/scrapy-2.13.2-green.svg)](https://scrapy.org)
+[![Docker](https://img.shields.io/badge/docker-enabled-blue.svg)](https://docker.com)
+
 ## 🎯 Descripción del Proyecto
 
 Stylos Scraper es una **solución profesional de web scraping distribuida** diseñada específicamente para la extracción masiva de datos de sitios de e-commerce de moda. Utiliza tecnologías avanzadas como **Selenium Grid**, **Scrapyd**, **FastAPI** y **Docker** para crear un sistema escalable y robusto capaz de manejar múltiples sitios web simultáneamente.
+
+### ✨ Nuevas Funcionalidades v1.1.0
+
+🔄 **Sistema de Versionado Automático**: Gestión semántica de versiones con `bump-my-version`  
+📊 **Monitoreo con Sentry**: Integración completa para tracking de errores y performance  
+🎯 **Sistema de Extractors Modular**: Arquitectura pluggable para fácil extensión a nuevos retailers  
+⚡ **Middlewares Avanzados**: Gestión inteligente de requests y anti-detección mejorada  
+🔧 **AutoThrottle Inteligente**: Control automático de velocidad según la carga del servidor
 
 🇨🇴 **Enfoque Inicial:** Comenzamos con el mercado colombiano como piloto  
 🌍 **Expansión Planificada:** Arquitectura diseñada para escalabilidad internacional  
 🐳 **Arquitectura Cloud-Native:** Completamente dockerizada con orquestación automática
 
-El proyecto forma parte del ecosistema **Stylos**, una plataforma de inteligencia artificial que analiza tendencias de moda y genera recomendaciones personalizadas basadas en diferentes estilos:
+El proyecto forma parte del ecosistema **Stylos**, una plataforma de inteligencia artificial que analiza tendencias de moda y genera recomendaciones personalizadas basada en diferentes estilos:
 
 - 💼 **Old Money** - Elegancia atemporal
 - 🎩 **Formal** - Vestimenta profesional  
@@ -144,11 +157,15 @@ classDiagram
         +extract_product_data() dict
     }
     class MangoExtractor {
-        +MENU_BUTTON_SELECTORS: List[str]  
+        +CATEGORY_LINKS_XPATH: str
         +PRODUCT_SELECTORS: Dict
-        +extract_menu_urls() dict
+        +SCROLL_TRIGGER_SELECTOR: str
+        +extract_menu_data() dict
         +extract_category_data() dict
         +extract_product_data() dict
+        +_extract_mango_product_info() dict
+        +_extract_mango_images_by_color() dict
+        +_get_current_product_images() list
     }
     class SeleniumMiddleware {
         +driver: WebDriver
@@ -198,6 +215,94 @@ graph LR
 ```
 
 ## 🛠️ Stack Tecnológico Completo
+
+### 📦 Nuevas Dependencias v1.0.0
+
+**Gestión de Versiones:**
+- `bump-my-version==1.2.0` - Versionado semántico automático
+- `python-dotenv==1.1.0` - Gestión de variables de entorno
+
+**Monitoreo y Debugging:**
+- `sentry-sdk==2.30.0` - Tracking de errores y performance monitoring
+- `rich==14.0.0` - Output terminal mejorado
+- `questionary==2.1.0` - Interfaces de línea de comandos interactivas
+
+**Testing Avanzado:**
+- `pytest==8.4.0` - Framework de testing moderno
+- `mongomock==4.3.0` - Mocking de MongoDB para tests
+
+**Web y API:**
+- `fastapi==0.115.13` - Framework web moderno para APIs
+- `uvicorn==0.34.3` - Servidor ASGI de alto rendimiento
+- `pydantic==2.11.7` - Validación de datos y settings
+
+**Selenium Mejorado:**
+- `selenium==4.33.0` - WebDriver actualizado
+- `webdriver-manager==4.0.2` - Gestión automática de drivers
+- `playwright==1.52.0` - Framework de automatización web alternativo
+
+### 🔧 Configuración de Middleware
+
+El proyecto ahora incluye middlewares avanzados configurados en `settings.py`:
+
+```python
+DOWNLOADER_MIDDLEWARES = {
+    "stylos.middlewares.SeleniumMiddleware": 543,      # Gestión de Selenium
+    "stylos.middlewares.BlocklistMiddleware": 544,     # Filtrado de URLs
+}
+
+# AutoThrottle inteligente activado
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_TARGET_CONCURRENCY = 16.0
+CONCURRENT_REQUESTS = 10
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
+```
+
+### 📈 Sistema de Versionado Automático
+
+El proyecto utiliza **versionado semántico** (SemVer) con gestión automática:
+
+```bash
+# Incrementar versión patch (1.0.0 → 1.0.1)
+bump-my-version patch
+
+# Incrementar versión minor (1.0.0 → 1.1.0)  
+bump-my-version minor
+
+# Incrementar versión major (1.0.0 → 2.0.0)
+bump-my-version major
+
+# Subir tags a GitHub
+git push --tags
+```
+
+**Configuración automática:**
+- ✅ Commit automático de cambios de versión
+- ✅ Creación automática de tags Git
+- ✅ Mensaje de commit estandarizado
+- ✅ Actualización automática de `stylos/__version__.py`
+
+### 📊 Monitoreo con Sentry
+
+Integración completa de Sentry para monitoring de errores y performance:
+
+```python
+# Configuración en settings.py
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+SENTRY_ENVIRONMENT = os.getenv('SCRAPY_ENV', 'development')
+SENTRY_RELEASE = __version__
+
+# Extensión disponible (comentada por defecto)
+EXTENSIONS = {
+    "stylos.extensions.SentryLoggingExtension": 100,
+}
+```
+
+**Características:**
+- 🎯 Tracking por spider individual
+- 📈 Performance monitoring incluido
+- 🔄 Flush automático al cerrar spider
+- 🏷️ Tags contextuales automáticos
 
 ### **Containerización y Orquestación**
 ```yaml
@@ -298,6 +403,9 @@ cat > .env << EOF
 MONGO_URI=mongodb://host.docker.internal:27017
 MONGO_DATABASE=stylos_scrapers
 MONGO_COLLECTION=products
+MONGO_USERNAME=          # Opcional
+MONGO_PASSWORD=          # Opcional  
+MONGO_AUTH_SOURCE=admin  # Opcional
 
 # Selenium Grid Configuration  
 SELENIUM_MODE=remote
@@ -306,6 +414,13 @@ SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
 # Scrapyd Configuration
 SCRAPYD_URL=http://scrapyd:6800
 PROJECT_NAME=stylos
+
+# Monitoreo y Logging
+SENTRY_DSN=              # Opcional - URL de Sentry para error tracking
+SCRAPY_ENV=development   # development | staging | production
+
+# Historia de productos (opcional)
+MONGO_HISTORY_COLLECTION=product_history
 EOF
 
 # 3. Lanzar arquitectura completa
@@ -353,6 +468,10 @@ MONGO_URI=mongodb://localhost:27017
 MONGO_DATABASE=stylos_scrapers
 MONGO_COLLECTION=products
 SELENIUM_MODE=local
+
+# Monitoreo (opcional)
+SENTRY_DSN=
+SCRAPY_ENV=development
 EOF
 
 # 4. Ejecutar directamente
@@ -371,8 +490,11 @@ python control_scraper.py --spider zara
 # Ejecutar producto específico para testing  
 python control_scraper.py --spider zara --url "https://www.zara.com/co/es/product-url"
 
-# Ejecutar Mango (en desarrollo)
+# Ejecutar Mango completo
 python control_scraper.py --spider mango
+
+# Ejecutar producto específico de Mango para testing
+python control_scraper.py --spider mango --url "https://shop.mango.com/co/es/product-url"
 ```
 
 **El cliente CLI proporciona:**
@@ -890,12 +1012,15 @@ docker-compose exec api scrapy crawl zara -s DOWNLOAD_DELAY=5 -L INFO
 ### 📊 **Métricas de Rendimiento Actual**
 
 ```
-🎯 Throughput: ~1,200 productos/hora (Zara completo)
+🎯 Throughput: 
+   • Zara: ~1,200 productos/hora (completo)
+   • Mango: ~800 productos/hora (sección mujer)
 🌐 Concurrencia: Hasta 5 Chrome nodes simultáneos
 💾 Almacenamiento: MongoDB con ~15GB de datos de prueba
 ⚡ Tiempo de respuesta API: <200ms promedio
 🔄 Uptime: 99.2% en pruebas de 30 días
 🛡️ Tasa de éxito anti-detección: 98.7%
+🖼️ Procesamiento de imágenes: Hasta 15 por color/variante
 ```
 
 ## 🏪 Retailers Soportados
@@ -914,13 +1039,21 @@ docker-compose exec api scrapy crawl zara -s DOWNLOAD_DELAY=5 -L INFO
   - ✅ Scroll infinito en categorías
 - **Líneas de código**: 537 (extractor) + 430 (spider)
 
-### 🚧 **En Desarrollo**
+### ✅ **Completamente Implementados**
 
 #### **Mango Colombia** 🟧
 - **URL**: https://shop.mango.com/co/
-- **Estado**: 🚧 80% completado
-- **Progreso**: Base implementada, integración pendiente
-- **Líneas de código**: 267 (extractor base)
+- **Estado**: ✅ Producción completa  
+- **Cobertura**: Extracción completa de productos
+- **Funcionalidades**:
+  - ✅ Navegación de categorías desde footer SeoBanner
+  - ✅ Extracción de productos con scroll infinito inteligente
+  - ✅ Extracción de múltiples variantes de color
+  - ✅ Procesamiento de imágenes por color (hasta 15 por variante)
+  - ✅ Manejo de precios tachados y currency meta
+  - ✅ Gestión anti-duplicados de URLs
+- **Líneas de código**: 292 (extractor) + 124 (spider)
+- **Arquitectura**: Extractor registrado y completamente funcional
 
 ### 📋 **Pipeline de Implementación**
 
@@ -940,7 +1073,7 @@ Ver documentación completa en [`RETAILERS.md`](RETAILERS.md) (309 líneas)
 
 ## 🚀 Ejemplo de Uso Completo
 
-### 🎯 Caso de Uso: Scraping Completo de Zara
+### 🎯 Caso de Uso: Scraping Completo de Zara y Mango
 
 ```bash
 # 1. Iniciar arquitectura completa
@@ -953,6 +1086,8 @@ curl http://localhost:4444  # ✅ Selenium Hub
 
 # 3. Ejecutar scraping completo con monitoreo
 python control_scraper.py --spider zara
+# O para Mango:
+python control_scraper.py --spider mango
 
 # 4. Mientras se ejecuta, monitorear en paralelo:
 # - Hub visual: http://localhost:4444
@@ -965,6 +1100,7 @@ python control_scraper.py --spider zara
 
 ### 📊 Resultado Esperado
 
+#### **Scraping de Zara:**
 ```
 ✅ Trabajo agendado con éxito. ID del trabajo: zara-20241218-153045
 🕵️ Monitoreando el trabajo... 
@@ -986,6 +1122,29 @@ python control_scraper.py --spider zara
    • Imágenes descargadas: 15,684
    • Tiempo total: 15.2 minutos
    • Éxito de extracción: 98.7%
+```
+
+#### **Scraping de Mango:**
+```
+✅ Trabajo agendado con éxito. ID del trabajo: mango-20250618-143022
+🕵️ Monitoreando el trabajo...
+
+📈 Progreso de Extracción:
+   [+25s] Extrayendo enlaces del SeoBanner footer...
+   [+40s] Navegando categorías...
+   [+120s] Iniciando scroll infinito inteligente...
+   [+280s] Extrayendo productos con variantes de color...
+   [+420s] Procesando hasta 15 imágenes por color...
+
+🎉 ¡Scraping completado exitosamente!
+
+📊 Estadísticas Finales:
+   • Productos extraídos: 892
+   • Categorías procesadas: 8 
+   • Variantes de color: 2,156
+   • Imágenes descargadas: 11,340
+   • Tiempo total: 11.8 minutos
+   • Éxito de extracción: 97.3%
 ```
 
 ## 🤝 Contribución y Desarrollo
@@ -1064,4 +1223,4 @@ python control_scraper.py --spider nuevo_retailer
 
 > **Arquitectura Cloud-Native**: Sistema completamente dockerizado y listo para producción con escalamiento horizontal automático y monitoreo avanzado.
 
-> **Última actualización**: Diciembre 2024 - **Estado**: Sistema en producción estable con arquitectura distribuida completa 
+> **Última actualización**: Junio 2025 - **Versión**: 1.1.0 - **Estado**: Sistema en producción estable con arquitectura distribuida completa, monitoreo Sentry integrado

@@ -1,6 +1,7 @@
 from scrapy import signals
 from scrapy.http import HtmlResponse
 from scrapy.exceptions import IgnoreRequest
+import sentry_sdk
 
 # --- Importaciones para Selenium ---
 from selenium import webdriver
@@ -95,7 +96,7 @@ class SeleniumMiddleware:
                 spider.logger.info("Instalando ChromeDriver...")
                 service = ChromeService(ChromeDriverManager().install())
                 spider.logger.info("Creando driver local...")
-                options.add_argument("--headless") # descomentar para que no se vea el navegador
+                # options.add_argument("--headless") # descomentar para que no se vea el navegador
                 self.driver = webdriver.Chrome(service=service, options=options)
                 
             spider.logger.info(f"✅ Driver de Selenium inicializado correctamente en modo '{self.selenium_mode}'")
@@ -159,10 +160,42 @@ class BlocklistMiddleware:
         'zara-50-anniversary-film-mkt15654.html',
         '/login',
         '/register',
-        'mailto:'
+        'mailto:',
+        '/cart',
+        '/favorites',
+        '/my-account',
+        '/responsibility'
     ]
     
     def process_request(self, request, spider):
         if any(term in request.url for term in self.BLOCKLIST_TERMS):
             raise IgnoreRequest(f"URL bloqueada por BlocklistMiddleware: {request.url}")
+        return None
+    
+class SentryContextMiddleware:
+    """
+    Añade contexto de la request/response a Sentry y captura excepciones.
+    """
+    def process_request(self, request, spider):
+        # Añade un "breadcrumb" para trazar el camino que sigue el scraper
+        sentry_sdk.add_breadcrumb(
+            category='scrapy',
+            message=f'Procesando request para {request.url}',
+            level='info'
+        )
+        return None # Continúa con el procesamiento normal
+
+    def process_exception(self, request, exception, spider):
+        # Esta es la forma más profesional de capturar la mayoría de los errores
+        # de Scrapy (errores de red, HTTP 4xx/5xx, errores en otros middlewares).
+        with sentry_sdk.push_scope() as scope:
+            scope.set_context("scrapy_request", {
+                "url": request.url,
+                "method": request.method,
+                "headers": dict(request.headers),
+                "meta": request.meta,
+            })
+            sentry_sdk.capture_exception(exception)
+        
+        # Permite que Scrapy continúe con su manejo de errores normal
         return None

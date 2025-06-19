@@ -9,6 +9,7 @@
 
 import os
 from dotenv import load_dotenv
+from stylos.__version__ import __version__
 
 load_dotenv()
 
@@ -68,13 +69,14 @@ DOWNLOADER_MIDDLEWARES = {
     # "stylos.middlewares.StylosDownloaderMiddleware": 543,
     "stylos.middlewares.SeleniumMiddleware": 543,
     "stylos.middlewares.BlocklistMiddleware": 544,
+    # "stylos.middlewares.SentryContextMiddleware": 545,
 }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    "scrapy.extensions.telnet.TelnetConsole": None,
-#}
+EXTENSIONS = {
+    # "stylos.extensions.SentryLoggingExtension": 100,
+}
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
@@ -134,3 +136,11 @@ MONGO_HISTORY_COLLECTION = os.getenv("MONGO_HISTORY_COLLECTION", "product_histor
 MONGO_USERNAME = os.getenv("MONGO_USERNAME")
 MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
 MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")
+
+# =============================================================================
+# SENTRY CONFIGURATION
+# =============================================================================
+
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+SENTRY_ENVIRONMENT = os.getenv('SCRAPY_ENV', 'development')
+SENTRY_RELEASE = __version__

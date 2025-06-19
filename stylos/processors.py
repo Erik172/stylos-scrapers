@@ -50,7 +50,7 @@ def normalize_text(text: Any, case: Literal['original', 'upper', 'lower'] = 'ori
     return clean_text
 
 
-def normalize_price(price_text: Optional[str]) -> Dict[str, Any]:
+def normalize_price(price_text: Optional[str], currency: Optional[str] = 'COP') -> Dict[str, Any]:
     """
     Parsea una cadena de texto de precio y la convierte en un diccionario estructurado.
 
@@ -61,7 +61,9 @@ def normalize_price(price_text: Optional[str]) -> Dict[str, Any]:
     Args:
         price_text (Optional[str]): El texto crudo del precio (ej. '$ 249.900 COP').
             Maneja correctamente valores `None`.
-
+        currency (Optional[str]): El código de la moneda por defecto si no se detecta en el texto (ej. 'COP', 'USD').
+            Si el texto contiene una moneda explícita, se usa esa en lugar del parámetro.
+        
     Returns:
         Dict[str, Any]: Un diccionario que contiene:
             - 'amount' (float | None): El valor numérico del precio.
@@ -79,6 +81,12 @@ def normalize_price(price_text: Optional[str]) -> Dict[str, Any]:
         >>> normalize_price('€ 99,99')
         {'amount': 99.99, 'currency': 'COP', 'original': '€ 99,99'}
         
+        >>> normalize_price('99.99', 'USD')
+        {'amount': 99.99, 'currency': 'USD', 'original': '99.99'}
+        
+        >>> normalize_price('99.99 EUR', 'USD')  # Moneda en texto tiene prioridad
+        {'amount': 99.99, 'currency': 'EUR', 'original': '99.99 EUR'}
+        
         >>> normalize_price('Artículo no disponible')
         {'amount': None, 'currency': 'COP', 'original': 'Artículo no disponible', 'error': ...}
     """
@@ -89,9 +97,9 @@ def normalize_price(price_text: Optional[str]) -> Dict[str, Any]:
         clean_text = price_text.strip()
 
         # 1. Extraer código de moneda (ej. 'COP', 'USD'). Busca una palabra de 3 letras mayúsculas.
-        #    Si no la encuentra, asume 'COP' como valor por defecto.
+        #    Si no la encuentra, usa el parámetro currency o 'COP' como valor por defecto.
         currency_match = re.search(r'\b([A-Z]{3})\b', clean_text)
-        currency = currency_match.group(1) if currency_match else 'COP'
+        detected_currency = currency_match.group(1) if currency_match else (currency or 'COP')
 
         # 2. Aislar la parte numérica del texto, eliminando símbolos y letras.
         number_part = re.sub(r'[^\d,.]', '', clean_text)
@@ -116,8 +124,8 @@ def normalize_price(price_text: Optional[str]) -> Dict[str, Any]:
 
         amount = float(number_part) if number_part else None
 
-        return {'amount': amount, 'currency': currency, 'original': price_text}
+        return {'amount': amount, 'currency': detected_currency, 'original': price_text}
 
     except (ValueError, AttributeError, IndexError) as e:
         # Si cualquier paso de la conversión falla, retorna una estructura de error.
-        return {'amount': None, 'currency': None, 'original': price_text, 'error': str(e)}
+        return {'amount': None, 'currency': currency, 'original': price_text, 'error': str(e)}
