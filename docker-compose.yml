@@ -5,10 +5,9 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    command: ./app/startup.sh
+    command: ["/bin/bash", "/app/app/startup.sh"]
     volumes:
       - ./stylos:/app/stylos
-      - ./app:/app/app
     ports:
       - "8000:8000"
     env_file:
@@ -31,12 +30,12 @@ services:
       - SELENIUM_MODE=remote
 
   selenium-hub:
-    image: selenium/hub:4.22.0
+    image: selenium/hub:latest
     ports:
       - "4444:4444"
 
   chrome:
-    image: selenium/node-chrome:4.22.0
+    image: selenium/node-chrome:latest
     shm_size: '2g' # Aumenta la memoria compartida para evitar crashes del navegador
     depends_on:
       - selenium-hub

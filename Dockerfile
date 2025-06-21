@@ -4,7 +4,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get install -y netcat-openbsd --no-install-recommends && \
+RUN apt-get update && apt-get install -y netcat-openbsd dos2unix --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -14,4 +14,5 @@ COPY scrapy.cfg /app/
 
 COPY ./stylos /app/stylos/
 COPY ./app /app/app/
-RUN chmod +x /app/app/startup.sh
+RUN dos2unix /app/app/startup.sh && \
+    chmod +x /app/app/startup.sh
