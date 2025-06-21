@@ -358,7 +358,7 @@ class ZaraExtractor(BaseExtractor):
                     try:
                         valid_src = self._wait_for_image_load(img_element, max_attempts=5)
                         
-                        if valid_src and valid_src not in seen_urls:
+                        if valid_src and valid_src not in seen_urls and self._is_valid_product_image(valid_src):
                             alt_text = img_element.get_attribute("alt") or f"{color_name} - Imagen {img_index}"
                             images_for_color.append({
                                 'src': valid_src,
@@ -368,7 +368,8 @@ class ZaraExtractor(BaseExtractor):
                             seen_urls.add(valid_src)
                             self.log(f"Imagen válida extraída para {color_name}: {valid_src[:80]}...", 'debug')
                         else:
-                            self.log(f"Imagen ignorada (duplicada o inválida) para {color_name}", 'debug')
+                            reason = "duplicada" if valid_src in seen_urls else "inválida/placeholder" if valid_src else "no encontrada"
+                            self.log(f"Imagen ignorada ({reason}) para {color_name}: {str(valid_src)[:60] if valid_src else 'None'}...", 'debug')
                     except Exception as e:
                         self.log(f"Error procesando imagen {img_index} del color '{color_name}': {e}", 'warning')
                 
@@ -405,17 +406,82 @@ class ZaraExtractor(BaseExtractor):
         Obtiene el nombre del color actualmente seleccionado en la página.
 
         Prueba varios selectores definidos en la configuración hasta encontrar
-        el nombre del color.
+        el nombre del color. Limpia el formato "Color | 1231####" para quedarse
+        solo con el nombre del color.
 
         Returns:
-            Optional[str]: El nombre del color como texto, o `None` si no se encuentra.
+            Optional[str]: El nombre del color como texto limpio, o `None` si no se encuentra.
         """
         for selector in self.PRODUCT_SELECTORS['color_name_selectors']:
             try:
                 color_element = self.driver.find_element(By.CSS_SELECTOR, selector)
                 color_name = color_element.text.strip()
                 if color_name:
-                    return color_name
+                    # Limpiar el formato "Color | 1231####" para quedarse solo con el nombre
+                    clean_color_name = self._clean_color_name(color_name)
+                    return clean_color_name
             except Exception:
                 continue
         return None
+
+    def _clean_color_name(self, color_name: str) -> str:
+        """
+        Limpia el nombre del color removiendo códigos y formatos no deseados.
+        
+        Ejemplos:
+        - "NEGRO | 0000" -> "NEGRO"
+        - "AZUL MARINO | 1234" -> "AZUL MARINO"
+        - "Color | 5678" -> "Color"
+        
+        Args:
+            color_name (str): El nombre del color original
+            
+        Returns:
+            str: El nombre del color limpio
+        """
+        if not color_name:
+            return color_name
+        
+        # Separar por el pipe (|) y quedarse con la primera parte
+        if '|' in color_name:
+            clean_name = color_name.split('|')[0].strip()
+            return clean_name if clean_name else color_name
+        
+        return color_name
+
+    def _is_valid_product_image(self, src: str) -> bool:
+        """
+        Filtra imágenes que no son de productos reales en Zara.
+        
+        Args:
+            src (str): URL de la imagen
+            
+        Returns:
+            bool: True si es una imagen válida de producto, False si es placeholder/inválida
+        """
+        if not src:
+            return False
+        
+        src_lower = src.lower()
+        
+        # Filtrar placeholders específicos de Zara
+        zara_invalid_patterns = [
+            'transparent-background.png',
+            'transparent.png', 
+            'placeholder',
+            'loading',
+            'spinner',
+            'blank',
+            'empty',
+            '/stdstatic/', # Directorio de recursos estáticos, no productos
+            'transparent-background',
+        ]
+        
+        # Si contiene algún patrón inválido, rechazar
+        if any(pattern in src_lower for pattern in zara_invalid_patterns):
+            return False
+        
+        # Usar la validación base como respaldo
+        return self._is_valid_image_src(src)
+            
+        

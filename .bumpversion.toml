@@ -6,4 +6,9 @@ tag = true
 message = "Bump version {current_version} → {new_version}"
 
 [[tool.bumpversion.files]]
-filename = "stylos/__version__.py" 
+filename = "stylos/__version__.py"
+
+[[tool.bumpversion.files]]
+filename = "README.md"
+search = "[![Version](https://img.shields.io/badge/version-{current_version}-blue.svg)]"
+replace = "[![Version](https://img.shields.io/badge/version-{new_version}-blue.svg)]" 

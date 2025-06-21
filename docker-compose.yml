@@ -18,6 +18,7 @@ services:
     environment:
       - SCRAPYD_URL=http://scrapyd:6800
       - PYTHONPATH=/app
+      - SENTRY_ENVIRONMENT=production
 
   scrapyd:
     build:
@@ -28,12 +29,12 @@ services:
     environment:
       - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
       - SELENIUM_MODE=remote
+      - SENTRY_ENVIRONMENT=production
 
   selenium-hub:
     image: selenium/hub:latest
     ports:
       - "4444:4444"
-
   chrome:
     image: selenium/node-chrome:latest
     shm_size: '2g' # Aumenta la memoria compartida para evitar crashes del navegador

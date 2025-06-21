@@ -1222,5 +1222,3 @@ python control_scraper.py --spider nuevo_retailer
 **🎯 Desarrollado con ❤️ para el futuro de la moda personalizada**
 
 > **Arquitectura Cloud-Native**: Sistema completamente dockerizado y listo para producción con escalamiento horizontal automático y monitoreo avanzado.
-
-> **Última actualización**: Junio 2025 - **Versión**: 1.1.0 - **Estado**: Sistema en producción estable con arquitectura distribuida completa, monitoreo Sentry integrado

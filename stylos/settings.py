@@ -69,13 +69,13 @@ DOWNLOADER_MIDDLEWARES = {
     # "stylos.middlewares.StylosDownloaderMiddleware": 543,
     "stylos.middlewares.SeleniumMiddleware": 543,
     "stylos.middlewares.BlocklistMiddleware": 544,
-    # "stylos.middlewares.SentryContextMiddleware": 545,
+    "stylos.middlewares.SentryContextMiddleware": 545,
 }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 EXTENSIONS = {
-    # "stylos.extensions.SentryLoggingExtension": 100,
+    "stylos.extensions.SentryLoggingExtension": 100,
 }
 
 # Configure item pipelines
