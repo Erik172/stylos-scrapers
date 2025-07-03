@@ -354,8 +354,3 @@ Para sugerencias de nuevos sitios, reportes de bugs o contribuciones al código:
 - 💡 **Features:** Proponer nuevos sitios o funcionalidades  
 - 🔧 **Pull Requests:** Contribuir con código
 - 📊 **Datos:** Compartir insights del mercado colombiano
-
----
-
-**Última actualización:** Diciembre 2024  
-**Próxima revisión:** Enero 2025

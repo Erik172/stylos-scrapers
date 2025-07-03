@@ -12,25 +12,43 @@ import requests
 API_BASE_URL = "http://localhost:8000"
 PROJECT_NAME = "stylos"  # El nombre de tu proyecto en Scrapyd
 
-def schedule_job(spider_name: str, url: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def schedule_job(spider_name: str, url: Optional[str] = None, country: Optional[str] = None, lang: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
     Envía una petición a la API para agendar la ejecución de una araña.
 
     Args:
         spider_name: El nombre de la araña a ejecutar (ej. 'zara').
         url: Opcional. La URL específica de un producto para ejecutar en modo de prueba.
+        country: Opcional. Código de país para spiders multi-región (ej. 'us', 'es', 'fr').
+        lang: Opcional. Código de idioma para spiders multi-región (ej. 'en', 'es', 'fr').
 
     Returns:
         Un diccionario con la información del trabajo si fue exitoso, o None si falló.
     """
     endpoint = f"{API_BASE_URL}/schedule"
     payload = {"spider_name": spider_name}
+    
+    # Construir spider_args si hay argumentos adicionales
+    spider_args = {}
+    if url:
+        spider_args["url"] = url
+    if country:
+        spider_args["country"] = country
+    if lang:
+        spider_args["lang"] = lang
+    
+    if spider_args:
+        payload["spider_args"] = spider_args
 
+    # Mostrar información de lo que se va a ejecutar
     if url:
         print(f"Preparando trabajo para la araña '{spider_name}' en una URL específica...")
-        payload["spider_args"] = {"url": url}
+        if country or lang:
+            print(f"  🌍 Configuración regional: país='{country or 'default'}', idioma='{lang or 'default'}'")
     else:
         print(f"Preparando trabajo para la araña '{spider_name}' (corrida completa)...")
+        if country or lang:
+            print(f"  🌍 Configuración regional: país='{country or 'default'}', idioma='{lang or 'default'}'")
 
     try:
         response = requests.post(endpoint, json=payload, timeout=10)
@@ -39,6 +57,12 @@ def schedule_job(spider_name: str, url: Optional[str] = None) -> Optional[Dict[s
         
         job_info = response.json()
         print(f"✅ Trabajo agendado con éxito. ID del trabajo: {job_info.get('job_id')}")
+        
+        # Mostrar argumentos usados si los hay
+        used_args = job_info.get('spider_args', {})
+        if used_args:
+            print(f"📝 Argumentos utilizados: {used_args}")
+        
         return job_info
 
     except requests.exceptions.RequestException as e:
@@ -102,7 +126,25 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Cliente de línea de comandos para controlar el Scraper de Stylos.",
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="""
+Ejemplos de uso:
+
+  # Ejecutar Zara Colombia (por defecto)
+  python control_scraper.py --spider zara
+
+  # Ejecutar Zara Estados Unidos en inglés
+  python control_scraper.py --spider zara --country us --lang en
+
+  # Ejecutar Zara España en español
+  python control_scraper.py --spider zara --country es --lang es
+
+  # Ejecutar producto específico de Zara Francia
+  python control_scraper.py --spider zara --country fr --lang fr --url "https://www.zara.com/fr/fr/product-url"
+
+  # Ejecutar Mango (no requiere country/lang)
+  python control_scraper.py --spider mango
+        """
     )
     parser.add_argument(
         "--spider",
@@ -114,10 +156,41 @@ def main():
         required=False,
         help="Opcional: La URL de un producto específico para realizar una prueba."
     )
+    parser.add_argument(
+        "--country",
+        required=False,
+        help="Opcional: Código de país para spiders multi-región (ej: us, es, fr, mx, gb)."
+    )
+    parser.add_argument(
+        "--lang",
+        required=False,
+        help="Opcional: Código de idioma para spiders multi-región (ej: en, es, fr, de)."
+    )
     args = parser.parse_args()
 
-    # Agenda el trabajo
-    job = schedule_job(args.spider, args.url)
+    # Validaciones específicas para Zara
+    if args.spider == 'zara':
+        # Valores por defecto para Zara
+        country = args.country or 'co'
+        lang = args.lang or 'es'
+        
+        # Mostrar configuración que se usará
+        print(f"🎯 Spider: {args.spider}")
+        print(f"🌍 País: {country}")
+        print(f"🗣️  Idioma: {lang}")
+        if args.url:
+            print(f"🔗 URL específica: {args.url}")
+        print()
+        
+        # Agenda el trabajo con parámetros regionales
+        job = schedule_job(args.spider, args.url, country, lang)
+    else:
+        # Para otros spiders (mango, etc.), usar configuración simple
+        if args.country or args.lang:
+            print(f"⚠️  Nota: Los parámetros --country y --lang son específicos para Zara.")
+            print(f"   Se ignorarán para el spider '{args.spider}'.")
+        
+        job = schedule_job(args.spider, args.url)
 
     # Si el trabajo se agendó correctamente, lo monitorea
     if job and job.get("job_id"):

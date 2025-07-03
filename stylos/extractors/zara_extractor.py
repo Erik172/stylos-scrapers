@@ -31,13 +31,9 @@ class ZaraExtractor(BaseExtractor):
     """
     
     # --- Selectores y Configuración Específica para Zara ---
-    # Se usan múltiples selectores para el menú hamburguesa para dar robustez
-    # frente a posibles cambios en el frontend del sitio y diferencias de idioma.
-    HAMBURGER_SELECTORS: List[str] = [
-        "//button[@aria-label='Abrir menú']",  # Español
-        "//button[@aria-label='Open menu']",   # Inglés
-        "//button[@aria-label='Abrir menú']//*[name()='svg']",
-        "//button[@aria-label='Open menu']//*[name()='svg']",
+    # Selectores GENÉRICOS para el menú hamburguesa. Los que dependen del
+    # idioma se generan dinámicamente en el constructor.
+    GENERIC_HAMBURGER_SELECTORS: List[str] = [
         ".layout-header-icon__icon",
         "//button[contains(@class, 'layout-header-icon')]",
         "//button[contains(@class, 'header-menu')]",
@@ -47,25 +43,15 @@ class ZaraExtractor(BaseExtractor):
         "//button[contains(@class, 'menu-toggle')]",
         "//button[@role='button'][contains(@class, 'layout-header')]",
     ]
-    
-    MENU_PANEL_XPATH = "//div[@aria-label='Menú de categorías']"
-    
-    # Configuración para navegar las categorías principales. Cada diccionario
-    # define el nombre de la categoría, el selector para hacerle clic y el
-    # XPath del contenedor de sus subcategorías.
-    CATEGORIES_CONFIG: List[Dict[str, str]] = [
-        {
-            'name': 'MUJER',
-            'selector': "//span[@class='layout-categories-category__name'][normalize-space()='MUJER']",
-            'subcategory_list': "(//ul[@class='layout-categories-category__subcategory-main'])[1]"
-        },
-        {
-            'name': 'HOMBRE',
-            'selector': "//span[@class='layout-categories-category__name'][normalize-space()='HOMBRE']",
-            'subcategory_list': "(//ul[@class='layout-categories-category__subcategory-main'])[2]"
-        }
-    ]
-    
+
+    # Traducciones para las categorías principales y elementos de la UI.
+    # Esto centraliza el texto sensible al idioma.
+    TRANSLATIONS = {
+        'es': {'woman': 'MUJER', 'man': 'HOMBRE', 'open_menu': 'Abrir Menú', 'menu': 'Menú de categorías'},
+        'en': {'woman': 'WOMAN', 'man': 'MAN', 'open_menu': 'Open Menu', 'menu': 'Category Menu'},
+        'fr': {'woman': 'FEMME', 'man': 'HOMME', 'open_menu': 'Ouvrir le Menu', 'menu': 'Menu des catégories'},
+        # Se pueden añadir más idiomas aquí.
+    }
     # Diccionario de selectores para la página de detalle de producto (PDP).
     PRODUCT_SELECTORS: Dict[str, Any] = {
         'name': "h1[class*='product-detail-info__header-name']",
@@ -83,6 +69,47 @@ class ZaraExtractor(BaseExtractor):
             ".product-color-extended-name.product-detail-info__color"
         ]
     }
+    
+    DIALOG_CHANGE_LANGUAGE_SELECTOR = "div.zds-dialog__focus-trap"
+    DIALOG_CHANGE_LANGUAGE_CLOSE_BUTTON_SELECTOR = "button.geolocation-modal__button[data-qa-action='stay-in-store']"
+    
+    def __init__(self, driver, spider):
+        """
+        Constructor que inicializa el extractor con selectores y configuraciones
+        dinámicas basadas en el idioma proporcionado por la araña.
+        """
+        super().__init__(driver, spider)
+        self.lang = getattr(spider, 'lang', 'es')
+        
+        # Usar inglés como fallback si el idioma no está en las traducciones
+        translations = self.TRANSLATIONS.get(self.lang, self.TRANSLATIONS['en'])
+        
+        # --- Configuración dinámica de selectores y nombres ---
+        
+        # 1. Selectores para el menú hamburguesa
+        open_menu_label = translations['open_menu']
+        lang_specific_hamburger = [
+            f"//button[@aria-label='{open_menu_label}']",
+            f"//button[@aria-label='{open_menu_label}']//*[name()='svg']",
+        ]
+        self.HAMBURGER_SELECTORS = lang_specific_hamburger + self.GENERIC_HAMBURGER_SELECTORS
+        
+        # 2. Selector para el panel de menú
+        self.MENU_PANEL_XPATH = f"//div[@aria-label='{translations['menu']}']"
+        
+        # 3. Configuración de categorías (MUJER, HOMBRE, etc.)
+        self.CATEGORIES_CONFIG: List[Dict[str, str]] = [
+            {
+                'name': translations['woman'],
+                'selector': f"//span[@class='layout-categories-category__name'][normalize-space()='{translations['woman'].upper()}']",
+                'subcategory_list': "(//ul[@class='layout-categories-category__subcategory-main'])[1]"
+            },
+            {
+                'name': translations['man'],
+                'selector': f"//span[@class='layout-categories-category__name'][normalize-space()='{translations['man'].upper()}']",
+                'subcategory_list': "(//ul[@class='layout-categories-category__subcategory-main'])[2]"
+            }
+        ]
 
     def extract_menu_data(self) -> Dict[str, List[str]]:
         """
@@ -103,6 +130,16 @@ class ZaraExtractor(BaseExtractor):
         self.log("Iniciando extracción de menú de Zara")
         wait = WebDriverWait(self.driver, 15)
         extracted_urls: List[str] = []
+        
+        time.sleep(1.3)
+        
+        # Cerrar el diálogo de cambio de idioma si está abierto
+        if self.driver.find_elements(By.CSS_SELECTOR, self.DIALOG_CHANGE_LANGUAGE_SELECTOR):
+            self.log("Cerrando diálogo de cambio de idioma")
+            close_button = self.driver.find_element(By.CSS_SELECTOR, self.DIALOG_CHANGE_LANGUAGE_CLOSE_BUTTON_SELECTOR)
+            if close_button:
+                close_button.click()
+                time.sleep(0.8)
 
         try:
             hamburger_button = self._find_hamburger_button(wait)

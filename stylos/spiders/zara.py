@@ -11,10 +11,18 @@ class ZaraSpider(scrapy.Spider):
     No tiene dependencias directas con Selenium ni lógica de extracción compleja.
     """
     name = "zara"
-    allowed_domains = ["zara.com", "www.zara.com", "zara.net", "static.zara.net", "zara.com.co"]
-    start_urls = [
-        "https://www.zara.com/co/",
-    ]
+    allowed_domains = ["zara.com", "www.zara.com", "zara.net", "static.zara.net"]
+    
+    def __init__(self, *args, **kwargs):
+        """
+        Inicializa la araña con soporte para internacionalización.
+        Permite especificar 'country' y 'lang' como argumentos.
+        Ej: scrapy crawl zara -a country=us -a lang=en
+        """
+        super(ZaraSpider, self).__init__(*args, **kwargs)
+        self.country = getattr(self, 'country', 'co')  # 'co' por defecto
+        self.lang = getattr(self, 'lang', 'es')      # 'es' por defecto
+        self.start_urls = [f"https://www.zara.com/{self.country}/{self.lang}/"]
     
     def start_requests(self):
         """
@@ -171,6 +179,8 @@ class ZaraSpider(scrapy.Spider):
         loader.add_value('site', 'ZARA')
         loader.add_value('datetime', datetime.now().isoformat())
         loader.add_value('last_visited', datetime.now().isoformat())
+        loader.add_value('lang', self.lang)
+        loader.add_value('country', self.country)
         
         # Generar item final con todos los procesadores aplicados
         yield loader.load_item()

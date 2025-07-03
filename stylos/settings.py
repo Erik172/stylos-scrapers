@@ -81,9 +81,9 @@ EXTENSIONS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "stylos.pipelines.PricePipeline": 100,        # Procesar precios primero
-    "stylos.pipelines.MongoDBPipeline": 200,      # Guardar en MongoDB al final
-    "stylos.pipelines.DuplicatesPipeline": 300,   # Filtrar duplicados primero
+    "stylos.pipelines.DuplicatesPipeline": 100,   # Filtrar duplicados primero  
+    "stylos.pipelines.PricePipeline": 200,        # Procesar precios primero
+    "stylos.pipelines.MongoDBPipeline": 300,      # Guardar en MongoDB al final
     "stylos.pipelines.StylosPipeline": 400,       # Procesamiento general
 }
 

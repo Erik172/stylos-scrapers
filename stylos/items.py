@@ -112,3 +112,12 @@ class ProductItem(scrapy.Item):
     last_visited = scrapy.Field(
         output_processor=TakeFirst()
     )
+    
+    # El idioma del producto.
+    lang = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    # El país del producto.
+    country = scrapy.Field(
+        output_processor=TakeFirst()
+    )

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional, Dict, Any
 import requests
 import os
 
@@ -14,6 +15,7 @@ app = FastAPI(
 
 class ScheduleRequest(BaseModel):
     spider_name: str
+    spider_args: Optional[Dict[str, Any]] = None
 
 @app.get("/", summary="Verificar estado de la API")
 def read_root():
@@ -25,18 +27,37 @@ def schedule_spider(request: ScheduleRequest):
     """
     Agenda la ejecución de una araña específica.
 
-    Recibe el nombre de la araña y le pide a Scrapyd que la ejecute.
+    Recibe el nombre de la araña y opcionalmente argumentos adicionales
+    como country, lang, url, etc. Le pide a Scrapyd que la ejecute.
     Retorna el ID del trabajo para poder consultar su estado.
     """
     try:
+        # Preparar datos base para Scrapyd
+        scrapyd_data = {
+            'project': PROJECT_NAME, 
+            'spider': request.spider_name
+        }
+        
+        # Agregar argumentos del spider si se proporcionan
+        if request.spider_args:
+            for key, value in request.spider_args.items():
+                # Scrapyd espera argumentos del spider como parámetros directos
+                scrapyd_data[key] = str(value)
+        
         response = requests.post(
             f"{SCRAPYD_URL}/schedule.json",
-            data={'project': PROJECT_NAME, 'spider': request.spider_name}
+            data=scrapyd_data
         )
         response.raise_for_status()
         data = response.json()
+        
         if data.get('status') == 'ok':
-            return {"job_id": data['jobid'], "spider": request.spider_name, "status": "scheduled"}
+            return {
+                "job_id": data['jobid'], 
+                "spider": request.spider_name, 
+                "status": "scheduled",
+                "spider_args": request.spider_args or {}
+            }
         else:
             raise HTTPException(status_code=500, detail=data.get('message', 'Error desconocido de Scrapyd'))
     except requests.exceptions.RequestException as e:

@@ -75,11 +75,15 @@ class SeleniumMiddleware:
             options.add_argument("--disable-translate")
             
             # Configuraciones de idioma para consistencia
-            options.add_argument('--lang=es-CO')
+            country = getattr(spider, 'country', 'co')
+            lang = getattr(spider, 'lang', 'es')
+            lang_code = f"{lang}-{country.upper()}"
+            spider.logger.info(f"Configuración regional: {lang_code}")
+            options.add_argument(f'--lang={lang_code}')
             options.add_experimental_option('prefs', {
-                'intl.accept_languages': 'es-CO,es',
+                'intl.accept_languages': lang_code,
                 'profile.managed_default_content_settings.images': 1
-            })
+            })  
             
             spider.logger.info(f"Modo Selenium: {self.selenium_mode}")
             if self.selenium_mode == 'remote':
