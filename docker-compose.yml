@@ -26,6 +26,8 @@ services:
       dockerfile: Dockerfile.scrapyd
     ports:
       - "6800:6800"
+    env_file:
+      - ./.env
     environment:
       - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
       - SELENIUM_MODE=remote
