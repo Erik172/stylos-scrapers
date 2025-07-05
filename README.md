@@ -5,7 +5,7 @@
 <!-- GIF -->
 ![Zara Scraper Demo](media/zara-demo.gif)
 
-[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/erik172/stylos-scrapers)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://github.com/erik172/stylos-scrapers)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![Scrapy](https://img.shields.io/badge/scrapy-2.13.2-green.svg)](https://scrapy.org)
 [![Docker](https://img.shields.io/badge/docker-enabled-blue.svg)](https://docker.com)
@@ -14,7 +14,7 @@
 
 Stylos Scraper es una **solución profesional de web scraping distribuida** diseñada específicamente para la extracción masiva de datos de sitios de e-commerce de moda. Utiliza tecnologías avanzadas como **Selenium Grid**, **Scrapyd**, **FastAPI** y **Docker** para crear un sistema escalable y robusto capaz de manejar múltiples sitios web simultáneamente.
 
-### ✨ Nuevas Funcionalidades v1.2.1
+### ✨ Nuevas Funcionalidades v1.2.2
 
 🌍 **Soporte Multi-País/Multi-Idioma**: Extracción internacional de Zara con parámetros dinámicos  
 💱 **Sistema Multi-Moneda Automático**: Detección automática de monedas por país (USD, EUR, COP, etc.)  
