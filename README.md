@@ -17,6 +17,7 @@ Stylos Scraper es una **solución profesional de web scraping distribuida** dise
 ### ✨ Nuevas Funcionalidades v1.2.0
 
 🌍 **Soporte Multi-País/Multi-Idioma**: Extracción internacional de Zara con parámetros dinámicos  
+💱 **Sistema Multi-Moneda Automático**: Detección automática de monedas por país (USD, EUR, COP, etc.)  
 🔄 **Sistema de Versionado Automático**: Gestión semántica de versiones con `bump-my-version`  
 📊 **Monitoreo con Sentry**: Integración completa para tracking de errores y performance  
 🎯 **Sistema de Extractors Modular**: Arquitectura pluggable para fácil extensión a nuevos retailers  
@@ -401,12 +402,14 @@ cd stylos-scrapers
 # 2. Configurar variables de entorno
 cat > .env << EOF
 # MongoDB Configuration
+# Ejemplos de MONGO_URI:
+# Sin autenticación: mongodb://host.docker.internal:27017
+# Con autenticación: mongodb://username:password@host.docker.internal:27017
+# MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net
 MONGO_URI=mongodb://host.docker.internal:27017
 MONGO_DATABASE=stylos_scrapers
 MONGO_COLLECTION=products
-MONGO_USERNAME=          # Opcional
-MONGO_PASSWORD=          # Opcional  
-MONGO_AUTH_SOURCE=admin  # Opcional
+MONGO_HISTORY_COLLECTION=product_history
 
 # Selenium Grid Configuration  
 SELENIUM_MODE=remote
@@ -419,9 +422,6 @@ PROJECT_NAME=stylos
 # Monitoreo y Logging
 SENTRY_DSN=              # Opcional - URL de Sentry para error tracking
 SCRAPY_ENV=development   # development | staging | production
-
-# Historia de productos (opcional)
-MONGO_HISTORY_COLLECTION=product_history
 EOF
 
 # 3. Lanzar arquitectura completa
@@ -465,9 +465,13 @@ pip install -r requirements.txt
 
 # 3. Configuración local
 cat > .env << EOF
+# MongoDB Configuration (ejemplos)
+# Sin autenticación: mongodb://localhost:27017
+# Con autenticación: mongodb://username:password@localhost:27017
 MONGO_URI=mongodb://localhost:27017
 MONGO_DATABASE=stylos_scrapers
 MONGO_COLLECTION=products
+MONGO_HISTORY_COLLECTION=product_history
 SELENIUM_MODE=local
 
 # Monitoreo (opcional)
@@ -553,6 +557,18 @@ El extractor adapta automáticamente los selectores según el idioma:
 - **Español**: "MUJER", "HOMBRE", "Abrir Menú"
 - **Inglés**: "WOMAN", "MAN", "Open Menu"  
 - **Francés**: "FEMME", "HOMME", "Ouvrir le Menu"
+
+**Monedas Automáticas por País:**
+El sistema determina automáticamente la moneda correcta según el país:
+- **Colombia** (`co`): COP (Peso Colombiano)
+- **Estados Unidos** (`us`): USD (Dólar)
+- **España** (`es`): EUR (Euro)
+- **Francia** (`fr`): EUR (Euro)
+- **México** (`mx`): MXN (Peso Mexicano)
+- **Reino Unido** (`gb`): GBP (Libra Esterlina)
+- **Italia** (`it`): EUR (Euro)
+- **Alemania** (`de`): EUR (Euro)
+- **Y más países soportados...**
 
 **Ejemplo con Cliente CLI:**
 ```bash
@@ -808,6 +824,8 @@ curl http://localhost:8000/
 ## 📊 Estructura de Datos Extraídos
 
 ### 🎯 Formato de Producto Completo
+
+#### **Producto de Zara Colombia:**
 ```json
 {
   "_id": {
@@ -820,6 +838,8 @@ curl http://localhost:8000/
     "159.900 COP",
     "89.900 COP"
   ],
+  "country": "co",
+  "lang": "es",
   "images_by_color": [
     {
       "color": "NEGRO",
@@ -881,6 +901,45 @@ curl http://localhost:8000/
   "currency": "COP",
   "discount_amount": 70000,
   "discount_percentage": 44
+}
+```
+
+#### **Producto de Zara USA:**
+```json
+{
+  "_id": {
+    "$oid": "685a4381e6b026683884babd"
+  },
+  "url": "https://www.zara.com/us/en/fluid-pleated-pants-p00264195.html?v1=440180813&v2=2419737",
+  "name": "FLUID PLEATED PANTS",
+  "description": "mid-rise pants with elasticated waistband. front pleats. wide legs.",
+  "raw_prices": [
+    "$75.90 USD",
+    "$45.54 USD"
+  ],
+  "country": "us",
+  "lang": "en",
+  "images_by_color": [
+    {
+      "color": "BLACK",
+      "images": [
+        {
+          "src": "https://static.zara.net/assets/public/760f/2991/d8c34e28bb62/0b90d2b7a3d7/01165295800-a2/01165295800-a2.jpg?ts=1743077050757&w=710",
+          "alt": "FLUID PLEATED PANTS - Black from Zara - Image 2",
+          "img_type": "product_image"
+        }
+      ]
+    }
+  ],
+  "site": "ZARA",
+  "datetime": "2025-06-24T01:19:45.789676",
+  "last_visited": "2025-06-24T01:19:45.789676",
+  "original_price": 75.90,
+  "current_price": 45.54,
+  "has_discount": true,
+  "currency": "USD",
+  "discount_amount": 30.36,
+  "discount_percentage": 40
 }
 ```
 
@@ -1027,9 +1086,10 @@ docker-compose exec api scrapy crawl zara -s DOWNLOAD_DELAY=5 -L INFO
 - **Cobertura**: Todas las categorías (MUJER/HOMBRE + subcategorías)
 - **Funcionalidades**:
   - ✅ **Soporte Multi-País/Multi-Idioma** con parámetros dinámicos
+  - ✅ **Sistema Multi-Moneda Automático** por país (USD, EUR, COP, MXN, GBP, etc.)
   - ✅ **Traducciones automáticas** de selectores por idioma
   - ✅ Navegación completa de menús dinámicos
-  - ✅ Extracción de productos con precios locales (COP, EUR, USD, etc.)
+  - ✅ Extracción de productos con precios locales correctos
   - ✅ Imágenes organizadas by color/variante  
   - ✅ Detección automática de descuentos
   - ✅ Scroll infinito en categorías

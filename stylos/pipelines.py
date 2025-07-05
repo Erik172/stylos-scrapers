@@ -11,6 +11,46 @@ from scrapy.exceptions import DropItem
 from typing import Dict, Any, List
 from stylos.processors import normalize_price
 
+def get_currency_by_country(country: str) -> str:
+    """
+    Mapea códigos de país a su moneda correspondiente.
+    
+    Args:
+        country (str): Código de país (ej. 'us', 'es', 'co')
+        
+    Returns:
+        str: Código de moneda (ej. 'USD', 'EUR', 'COP')
+    """
+    currency_map = {
+        'co': 'COP',  # Colombia - Peso Colombiano
+        'us': 'USD',  # Estados Unidos - Dólar
+        'es': 'EUR',  # España - Euro
+        'fr': 'EUR',  # Francia - Euro
+        'mx': 'MXN',  # México - Peso Mexicano
+        'gb': 'GBP',  # Reino Unido - Libra Esterlina
+        'it': 'EUR',  # Italia - Euro
+        'de': 'EUR',  # Alemania - Euro
+        'pt': 'EUR',  # Portugal - Euro
+        'nl': 'EUR',  # Países Bajos - Euro
+        'be': 'EUR',  # Bélgica - Euro
+        'at': 'EUR',  # Austria - Euro
+        'ca': 'CAD',  # Canadá - Dólar Canadiense
+        'au': 'AUD',  # Australia - Dólar Australiano
+        'jp': 'JPY',  # Japón - Yen
+        'kr': 'KRW',  # Corea del Sur - Won
+        'cn': 'CNY',  # China - Yuan
+        'br': 'BRL',  # Brasil - Real
+        'ar': 'ARS',  # Argentina - Peso Argentino
+        'cl': 'CLP',  # Chile - Peso Chileno
+        'pe': 'PEN',  # Perú - Sol
+        'uy': 'UYU',  # Uruguay - Peso Uruguayo
+        'ec': 'USD',  # Ecuador - Dólar (dolarizada)
+        'pa': 'USD',  # Panamá - Dólar (dolarizada)
+        'sv': 'USD',  # El Salvador - Dólar (dolarizada)
+    }
+    
+    return currency_map.get(country.lower(), 'COP')  # COP por defecto si no se encuentra
+
 class PricePipeline:
     """
     Pipeline para procesar y enriquecer los datos de precios de un item.
@@ -21,12 +61,16 @@ class PricePipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
         
+        # --- Determinar Moneda por País ---
+        country = adapter.get('country', 'co')  # Colombia por defecto
+        expected_currency = get_currency_by_country(country)
+        currency = adapter.get('currency', expected_currency)
+        
         # --- Procesamiento de Lista de Precios ---
         raw_prices = adapter.get('raw_prices', [])
-        currency = adapter.get('currency', None)
         
         if raw_prices:
-            price_info = self._process_price_list(raw_prices)
+            price_info = self._process_price_list(raw_prices, expected_currency)
             
             # Asignar precio original y actual
             adapter['original_price'] = price_info['original_price']
@@ -43,12 +87,12 @@ class PricePipeline:
         current_price_text = adapter.get('current_price')
         
         if original_price_text:
-            price_data = normalize_price(original_price_text, currency)
+            price_data = normalize_price(original_price_text, expected_currency)
             adapter['original_price'] = price_data['amount']
             adapter['currency'] = price_data['currency'] # Asigna la moneda del precio original
             
         if current_price_text:
-            price_data = normalize_price(current_price_text, currency)
+            price_data = normalize_price(current_price_text, expected_currency)
             adapter['current_price'] = price_data['amount']
             if not adapter.get('currency'):
                 adapter['currency'] = price_data['currency'] # Si no había moneda, usa la del precio actual
@@ -68,10 +112,14 @@ class PricePipeline:
             
         return item
     
-    def _process_price_list(self, prices):
+    def _process_price_list(self, prices, currency='COP'):
         """
         Procesa lista de precios y determina cuál es original y cuál es actual.
         Lógica: Si hay múltiples precios, el mayor es original y el menor es actual.
+        
+        Args:
+            prices (list): Lista de precios en formato texto
+            currency (str): Código de moneda para la normalización
         """
         price_info = {
             'original_price': None,
@@ -92,7 +140,7 @@ class PricePipeline:
             # Múltiples precios - determinar por valor numérico
             normalized_prices = []
             for price_text in prices:
-                norm = normalize_price(price_text)
+                norm = normalize_price(price_text, currency)
                 if norm['amount'] is not None:
                     normalized_prices.append((price_text, norm['amount']))
             
@@ -118,25 +166,25 @@ class MongoPipelineBase:
     Clase base abstracta para gestionar una conexión a MongoDB.
 
     Esta clase implementa el patrón de diseño "Template Method". Centraliza la
-    lógica común y reutilizable para la conexión a la base de datos (autenticación,
-    apertura y cierre de la conexión), permitiendo que las clases hijas solo se
+    lógica común y reutilizable para la conexión a la base de datos, permitiendo 
+    que las clases hijas solo se enfoquen en su lógica específica de procesamiento de items.
 
-    enfoquen en su lógica específica de procesamiento de items.
-
+    La autenticación se maneja completamente a través de la URI de MongoDB.
     No está diseñada para ser instanciada directamente, sino para ser heredada.
     """
 
-    def __init__(self, mongo_uri: str, mongo_db: str, mongo_username: str, mongo_password: str, mongo_auth_source: str):
+    def __init__(self, mongo_uri: str, mongo_db: str):
         """
         Inicializa la pipeline con los parámetros de conexión.
 
         Este método es llamado por `from_crawler` con los valores de `settings.py`.
+        
+        Args:
+            mongo_uri (str): URI completa de MongoDB (incluye autenticación si es necesaria)
+            mongo_db (str): Nombre de la base de datos
         """
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
-        self.mongo_username = mongo_username
-        self.mongo_password = mongo_password
-        self.mongo_auth_source = mongo_auth_source
         self.client = None
         self.db = None
 
@@ -156,19 +204,16 @@ class MongoPipelineBase:
         """
         return cls(
             mongo_uri=crawler.settings.get("MONGO_URI"),
-            mongo_db=crawler.settings.get("MONGO_DATABASE"),
-            mongo_username=crawler.settings.get("MONGO_USERNAME"),
-            mongo_password=crawler.settings.get("MONGO_PASSWORD"),
-            mongo_auth_source=crawler.settings.get("MONGO_AUTH_SOURCE", "admin")
+            mongo_db=crawler.settings.get("MONGO_DATABASE")
         )
 
     def open_spider(self, spider: Spider) -> None:
         """
         Se ejecuta cuando la araña se abre. Establece la conexión con MongoDB.
 
-        Crea el cliente de MongoDB, verifica la conexión con un 'ping' al servidor
-        y selecciona la base de datos. Si la conexión falla, lanza una excepción
-        para detener el proceso.
+        Crea el cliente de MongoDB usando la URI completa (que incluye autenticación),
+        verifica la conexión con un 'ping' al servidor y selecciona la base de datos.
+        Si la conexión falla, lanza una excepción para detener el proceso.
 
         Args:
             spider: La instancia de la araña que se está ejecutando.
@@ -177,9 +222,6 @@ class MongoPipelineBase:
         try:
             self.client = pymongo.MongoClient(
                 self.mongo_uri,
-                username=self.mongo_username,
-                password=self.mongo_password,
-                authSource=self.mongo_auth_source,
                 serverSelectionTimeoutMS=5000  # Timeout para evitar bloqueos
             )
             # Verificar la conexión de forma temprana

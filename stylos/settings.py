@@ -8,10 +8,11 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from stylos.__version__ import __version__
 
-load_dotenv()
+# Busca el .env subiendo directorios desde settings.py hasta encontrarlo
+load_dotenv(find_dotenv())
 
 BOT_NAME = "stylos"
 
@@ -120,22 +121,21 @@ FEED_EXPORT_ENCODING = "utf-8"
 # CONFIGURACIÓN DE MONGODB
 # =============================================================================
 
-# URI de conexión a MongoDB (cambiar según tu configuración)
+# URI de conexión a MongoDB (incluye autenticación si es necesaria)
+# Ejemplos:
+# Sin autenticación: mongodb://localhost:27017
+# Con autenticación: mongodb://username:password@localhost:27017
+# Atlas MongoDB: mongodb+srv://username:password@cluster.mongodb.net
 MONGO_URI = os.getenv("MONGO_URI")
 
 # Nombre de la base de datos
 MONGO_DATABASE = os.getenv("MONGO_DATABASE", "stylos_scrapers")
 
 # Nombre de la colección donde se guardarán los productos
-MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "zara_products")
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "products")
 
 # Nombre de la colección para el historial de cambios (opcional)
 MONGO_HISTORY_COLLECTION = os.getenv("MONGO_HISTORY_COLLECTION", "product_history")
-
-# Configuración adicional de MongoDB (opcional)
-MONGO_USERNAME = os.getenv("MONGO_USERNAME")
-MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
-MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")
 
 # =============================================================================
 # SENTRY CONFIGURATION
