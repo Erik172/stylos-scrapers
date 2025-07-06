@@ -149,7 +149,7 @@ class MangoExtractor(BaseExtractor):
             
             # Precios
             try:
-                price_elements = self.driver.find_elements(By.CSS_SELECTOR, "span[class^='SinglePrice_crossed']")
+                price_elements = self.driver.find_elements(By.CSS_SELECTOR, self.PRODUCT_SELECTORS['prices'])
                 product_data['prices'] = [elem.text.strip() for elem in price_elements if elem.text.strip()]
             except Exception as e:
                 self.log(f"Error extrayendo precios: {e}", 'error')

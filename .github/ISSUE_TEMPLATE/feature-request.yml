@@ -1,0 +1,208 @@
+name: ✨ Feature Request
+description: Request new features, improvements, or new retailers
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement for Stylos Scrapers! 
+        Please describe clearly what functionality you would like to see implemented.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New Retailer/Spider
+        - Improvement to Existing Extractor
+        - New API Functionality
+        - Infrastructure Improvement
+        - Testing Improvement
+        - Documentation
+        - Developer Tools
+        - Performance/Optimization
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A brief and clear description of what you want to request
+      placeholder: |
+        Example: Add support for the H&M Colombia website to extract fashion products with prices in COP.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it Solves
+      description: What problem or need does this feature solve?
+      placeholder: |
+        Example: We currently only support Zara and Mango, but H&M is one of the most important retailers 
+        in Colombia, and it would be valuable to have their data for fashion trend analysis.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe in detail how you imagine this feature would work
+      placeholder: |
+        Example for a new retailer:
+        1. Create `hm.py` spider to navigate H&M Colombia
+        2. Implement `HMExtractor` with specific selectors
+        3. Handle navigation by categories (Women, Men, Kids)
+        4. Extract products with prices in COP
+        5. Support for images by color/variant
+        6. Integration with the existing pipeline system
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered other ways to solve this problem?
+      placeholder: |
+        Example: 
+        - Using official APIs (not publicly available)
+        - Integration with third-party services (very expensive)
+        - Manual scraping (not scalable)
+
+  - type: textarea
+    id: retailer-info
+    attributes:
+      label: Retailer Information (For new retailers only)
+      description: If you are requesting a new retailer, provide technical details
+      placeholder: |
+        **Retailer**: H&M Colombia
+        **URL**: https://www2.hm.com/es_co/
+        **Site Type**: SPA (Single Page Application)
+        **Technical Complexity**: Medium-High
+        **Special Features**:
+        - Lazy loading of products
+        - AJAX navigation
+        - Multiple product variants
+        - Dynamic filtering system
+        
+        **Important data to extract**:
+        - Product name
+        - Prices in COP
+        - Descriptions
+        - Images by color
+        - Categories (Women, Men, Kids)
+        - Availability/stock
+      render: markdown
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - Low - Would be nice to have
+        - Medium - Would significantly improve the project
+        - High - Important for main use cases
+        - Critical - Blocking for essential functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: How would this feature be used? Who would benefit?
+      placeholder: |
+        Example:
+        1. **Fashion Analysts**: Compare prices between retailers
+        2. **Researchers**: Study Colombian market trends
+        3. **Developers**: Integrate data into fashion applications
+        4. **Companies**: Competitive analysis and pricing
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know that this feature is complete and working correctly?
+      placeholder: |
+        Example for a new retailer:
+        - [ ] Spider can navigate all main categories
+        - [ ] Successfully extracts at least 100 products per category
+        - [ ] Prices are correctly extracted in COP
+        - [ ] Images are organized by color/variant
+        - [ ] Rate limiting respects terms of service
+        - [ ] Unit tests with >80% coverage
+        - [ ] Documentation updated in RETAILERS.md
+        - [ ] Works in both local and Docker mode
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Implementation Contribution
+      description: Are you willing to help with the implementation?
+      options:
+        - label: I can help with website research/analysis
+        - label: I can contribute code (spider/extractor)
+        - label: I can help with testing
+        - label: I can help with documentation
+        - label: I am only reporting the idea (no implementation)
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details (Optional)
+      description: Additional technical information relevant to the implementation
+      placeholder: |
+        Example:
+        - Identified CSS selectors: ".product-item", ".price-current"
+        - Detected internal APIs: /api/products/search
+        - Anti-scraping measures: Captcha after 100 requests
+        - Site peculiarities: Requires session cookies
+        - Additional libraries needed: requests-html for JS rendering
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Additional Resources
+      description: Links, documentation, or examples that might help
+      placeholder: |
+        - Official retailer documentation
+        - Examples of CSS selectors
+        - Interface screenshots
+        - Links to example products
+        - Similar case studies
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Check before submitting the request
+      options:
+        - label: I have checked that this feature does not currently exist
+          required: true
+        - label: I have searched to see if someone else has already requested something similar
+          required: true
+        - label: I have provided enough detail to understand the request
+          required: true
+        - label: I have considered the impact on the existing system
+          required: false

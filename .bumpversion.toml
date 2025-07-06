@@ -9,11 +9,11 @@ message = "Bump version {current_version} → {new_version}"
 filename = "stylos/__version__.py"
 
 [[tool.bumpversion.files]]
-filename = "README.md"
+filename = "README.es.md"
 search = "[![Version](https://img.shields.io/badge/version-{current_version}-blue.svg)]"
 replace = "[![Version](https://img.shields.io/badge/version-{new_version}-blue.svg)]" 
 
 [[tool.bumpversion.files]]
 filename = "README.md"
-search = "### ✨ Nuevas Funcionalidades v{current_version}"
-replace = "### ✨ Nuevas Funcionalidades v{new_version}"
+search = "[![Version](https://img.shields.io/badge/version-{current_version}-blue.svg)]"
+replace = "[![Version](https://img.shields.io/badge/version-{new_version}-blue.svg)]" 

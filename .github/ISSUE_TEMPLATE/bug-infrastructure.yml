@@ -1,0 +1,257 @@
+name: 🐳 Infrastructure Bug
+description: Report issues with Docker, Selenium Grid, memory, networking, etc.
+title: "[BUG][INFRA] "
+labels: ["bug", "infrastructure"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an infrastructure bug in Stylos Scrapers!
+        This template is for issues related to Docker, Selenium Grid, network configuration, memory, etc.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the infrastructure is having problems?
+      options:
+        - Docker Compose
+        - Selenium Hub
+        - Chrome Nodes
+        - API Server (FastAPI)
+        - Scrapyd Server
+        - Network/Connectivity
+        - Memory/Performance
+        - Environment Variables
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How critical is this issue?
+      options:
+        - Critical - System is down
+        - High - Core functionality affected
+        - Medium - Secondary functionality affected
+        - Low - Improvement or cosmetic issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem Description
+      description: Clearly describe what is failing in the infrastructure
+      placeholder: |
+        Example: The Chrome containers are running out of memory after ~100 products and are constantly restarting.
+        This causes Selenium timeouts and spider failures.
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What specific symptoms are you seeing?
+      placeholder: |
+        - Containers restarting continuously
+        - Selenium timeouts (WebDriverException)
+        - Swap memory at 100%
+        - API returns 500 Internal Server Error
+        - Logs show "out of memory" errors
+      value: |
+        - 
+        - 
+        - 
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. docker-compose up -d
+        2. python control_scraper.py --spider zara
+        3. Wait for 30 minutes or ~100 products
+        4. Observe containers with `docker stats`
+        5. See memory at 100% and chrome container restarting
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: System Logs
+      description: Relevant logs from Docker, Selenium, or affected services
+      placeholder: |
+        ```
+        # Docker logs
+        docker-compose logs chrome
+
+        # Or specific service logs
+        docker-compose logs api
+        docker-compose logs scrapyd
+        docker-compose logs selenium-hub
+        ```
+      render: shell
+
+  - type: textarea
+    id: docker-config
+    attributes:
+      label: Docker Configuration
+      description: Relevant configuration from docker-compose.yml or Dockerfile
+      placeholder: |
+        ```yaml
+        chrome:
+          image: selenium/node-chrome:latest
+          shm_size: '2g'
+          depends_on:
+            - selenium-hub
+          environment:
+            - SE_NODE_MAX_SESSIONS=1
+        ```
+      render: yaml
+
+  - type: textarea
+    id: system-resources
+    attributes:
+      label: System Resources
+      description: Information about available resources and current usage
+      placeholder: |
+        **Available Resources:**
+        - Total RAM: 16GB
+        - CPU: 8 cores
+        - Disk: 500GB SSD
+        
+        **Current Usage:**
+        - RAM in use: 14GB (87%)
+        - Average CPU: 45%
+        - Disk space: 200GB free
+        
+        **Docker Stats:**
+        ```
+        CONTAINER ID   NAME          CPU %     MEM USAGE / LIMIT   MEM %
+        abc123...      chrome_1      85.2%     3.8GB / 4GB        95%
+        def456...      selenium-hub  12.3%     512MB / 2GB        25%
+        ```
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: In which environment does the problem occur?
+      options:
+        - Local Development
+        - Local Docker
+        - Staging Server
+        - Production Server
+        - CI/CD Pipeline
+        - Cloud (AWS/GCP/Azure)
+    validations:
+      required: true
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Information
+      description: Operating system and version details
+      value: |
+        - **OS**: [e.g., Ubuntu 20.04, Windows 10, macOS Monterey]
+        - **Docker**: [e.g., 24.0.0]
+        - **Docker Compose**: [e.g., 2.20.0]
+        - **RAM**: [e.g., 16GB]
+        - **CPU**: [e.g., Intel i7-8700K, 8 cores]
+        - **Selenium Grid**: [e.g., selenium/hub:latest]
+        - **Chrome Version**: [e.g., selenium/node-chrome:latest]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: How should the infrastructure work?
+      placeholder: |
+        The Chrome containers should maintain a stable memory usage,
+        without restarting, and allow spiders to run continuously
+        without timeouts or connection errors.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting Performed
+      description: What troubleshooting steps have you tried?
+      options:
+        - label: I have restarted the Docker containers
+        - label: I have checked the logs of all services
+        - label: I have monitored memory/CPU usage
+        - label: I have verified network connectivity between containers
+        - label: I have tried with different resource configurations
+        - label: I have cleaned up unused Docker images/volumes
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround (If applicable)
+      description: Have you found a way to work around the problem?
+      placeholder: |
+        Example: Manually restarting the containers every hour with:
+        `docker-compose restart chrome`
+        
+        Or increasing the allocated memory in docker-compose.yml
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution (Optional)
+      description: If you have ideas on how to solve the problem
+      placeholder: |
+        Example:
+        1. Increase shm_size to '4g' in chrome containers
+        2. Configure stricter memory limits
+        3. Implement automatic health checks
+        4. Add periodic cleanup of Selenium sessions
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: |
+        - Recent configuration changes
+        - Screenshots from monitoring tools
+        - Specific network configuration
+        - Firewall/proxy settings
+        - Other services running on the same system
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Verify that you have completed these steps before submitting
+      options:
+        - label: I have checked that this issue has not been reported before
+          required: true
+        - label: I have included relevant system/Docker logs
+          required: true
+        - label: I have provided information about system resources
+          required: true
+        - label: I have tried basic troubleshooting steps
+          required: true

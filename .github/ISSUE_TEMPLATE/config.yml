@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Project Documentation
+    url: https://github.com/erik172/stylos-scrapers/blob/main/README.md
+    about: Review the main project documentation
+  - name: 🤝 Contribution Guide
+    url: https://github.com/erik172/stylos-scrapers/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to the project
+  - name: 🛍️ Retailer Status
+    url: https://github.com/erik172/stylos-scrapers/blob/main/RETAILERS.md
+    about: Check which retailers are supported and which are in development
+  - name: 💬 GitHub Discussions
+    url: https://github.com/erik172/stylos-scrapers/discussions
+    about: Join community discussions and share ideas
+  - name: 📧 Direct Contact
+    url: mailto:builker@icloud.com
+    about: For private inquiries or security issues

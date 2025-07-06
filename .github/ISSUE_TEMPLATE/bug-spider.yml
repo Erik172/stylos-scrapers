@@ -1,0 +1,183 @@
+name: 🕷️ Spider Bug
+description: Report a problem with data extraction from a specific spider
+title: "[BUG][SPIDER] "
+labels: ["bug", "spider"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug in a Stylos Scrapers spider! 
+        Please provide as much information as possible to help us reproduce and fix the issue.
+
+  - type: dropdown
+    id: spider
+    attributes:
+      label: Affected Spider
+      description: Which spider is having the problem?
+      options:
+        - Zara
+        - Mango
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: Bug Type
+      description: What type of problem is occurring?
+      options:
+        - Incorrect price extraction
+        - CSS/XPath selectors not working
+        - Images not extracting correctly
+        - Page navigation fails
+        - Infinite scroll not working
+        - Missing or empty data
+        - Selenium TimeoutException
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Clearly describe what is wrong and what you expected to happen
+      placeholder: |
+        Example: The Zara spider is not correctly extracting prices when discounts are active. 
+        The `current_price` and `original_price` fields appear empty in the output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide the exact commands and steps to reproduce the bug
+      placeholder: |
+        1. Run: `python control_scraper.py --spider zara --url "SPECIFIC_URL"`
+        2. Check the `current_price` field in the JSON output
+        3. Observe that it is empty or has an incorrect value
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: input
+    id: url-example
+    attributes:
+      label: Example URL
+      description: Specific URL where the problem occurs (if applicable)
+      placeholder: "https://www.zara.com/us/en/example-product.html"
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead of the current behavior?
+      placeholder: "It should correctly extract both the original price and the discounted price."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Current Behavior
+      description: What is actually happening?
+      placeholder: "The price fields appear empty or with incorrect values."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and Errors
+      description: Copy the relevant logs, error messages, or spider output
+      placeholder: |
+        ```
+        2025-01-XX XX:XX:XX [spider_name] ERROR: Error extracting prices: NoSuchElementException
+        Message: no such element: Unable to locate element: {"method":"css selector","selector":".price"}
+        ```
+      render: shell
+
+  - type: textarea
+    id: output-data
+    attributes:
+      label: Output Data (Optional)
+      description: Example of the output JSON if available
+      placeholder: |
+        ```json
+        {
+          "url": "https://example.com/product",
+          "name": "Example Product",
+          "current_price": null,
+          "original_price": null,
+          "currency": "USD"
+        }
+        ```
+      render: json
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Execution Environment
+      description: Where are you running the spider?
+      options:
+        - Docker (docker-compose up)
+        - Local (direct scrapy crawl)
+        - Development (VS Code / IDE)
+        - Production
+    validations:
+      required: true
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Information
+      description: System versions and configuration
+      value: |
+        - **OS**: [e.g., Windows 10, Ubuntu 20.04, macOS]
+        - **Python**: [e.g., 3.11.5]
+        - **Scrapy**: [e.g., 2.13.2]
+        - **Selenium**: [e.g., 4.33.0]
+        - **Docker**: [e.g., 24.0.0, if applicable]
+        - **Browser**: [e.g., Chrome 120.0.0]
+      render: markdown
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Verify that you have completed these steps before submitting
+      options:
+        - label: I have checked that this bug has not been reported before
+          required: true
+        - label: I have tested with the latest version of the code
+          required: true
+        - label: I have included relevant logs and commands to reproduce
+          required: true
+        - label: I have tested in both local and Docker mode (if possible)
+          required: false
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution (Optional)
+      description: If you have an idea of how to fix it, please share it
+      placeholder: |
+        Example: Update the CSS selectors in zara_extractor.py line 45:
+        - Previous selector: ".price-current"
+        - Suggested selector: ".money-amount__main"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: "Screenshots, recent website changes, special configuration, etc."

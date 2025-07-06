@@ -1,0 +1,123 @@
+name: ❓ Question / Help
+description: Ask a question or request help with the project
+title: "[QUESTION] "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome! We are here to help you with Stylos Scrapers.
+        Before asking your question, please consider reviewing the existing documentation.
+
+  - type: checkboxes
+    id: documentation-check
+    attributes:
+      label: Documentation Checked
+      description: Have you reviewed the available documentation?
+      options:
+        - label: I have read the README.md
+        - label: I have reviewed CONTRIBUTING.md
+        - label: I have consulted RETAILERS.md
+        - label: I have searched for similar closed Issues
+
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: Question Category
+      description: What aspect of the project is your question about?
+      options:
+        - Initial Setup / Configuration
+        - Using Existing Spiders
+        - Creating New Spiders
+        - Docker / Infrastructure
+        - Selenium Grid
+        - API Usage
+        - Troubleshooting / Debugging
+        - Contributing to the Project
+        - Web Scraping Concepts
+        - Other technical questions
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Clearly describe what you need to know or what problem you are trying to solve
+      placeholder: |
+        Example: How can I configure the Zara spider to extract products only from the "Women" category? 
+        I have tried modifying the start URLs but I'm not sure what the correct way is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about what you are trying to do
+      placeholder: |
+        Example:
+        - I am working on a price analysis of women's clothing
+        - I need data only from women's products for my research
+        - I want to optimize scraping time by avoiding unnecessary categories
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted-solution
+    attributes:
+      label: What You've Tried (Optional)
+      description: What have you tried to do to solve this?
+      placeholder: |
+        Example:
+        - I modified the `start_urls` in zara.py
+        - I tried using arguments in the `control_scraper.py` command
+        - I reviewed the Scrapy documentation on `start_urls`
+        - I searched on Google about filtering categories in Scrapy
+
+  - type: dropdown
+    id: experience-level
+    attributes:
+      label: Experience Level
+      description: What is your experience level with these technologies?
+      options:
+        - Beginner - New to web scraping/Python
+        - Intermediate - Some experience with Python/scraping
+        - Advanced - Significant experience with Scrapy/Selenium
+        - Expert - Extensive experience in web scraping
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Your Environment
+      description: Information about your configuration (if relevant)
+      value: |
+        - **OS**: [e.g., Windows 10, Ubuntu 20.04, macOS]
+        - **Python**: [e.g., 3.11.5]
+        - **Environment**: [Docker / Local / Other]
+        - **Command used**: [e.g., python control_scraper.py --spider zara]
+      render: markdown
+
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected Outcome
+      description: What exactly would you like to achieve?
+      placeholder: |
+        Example: I would like the spider to extract only products from the "Women" category 
+        and for the process to be faster by avoiding other unnecessary categories.
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any other information that might be useful
+      placeholder: |
+        - Error screenshots
+        - Specific logs
+        - Special configuration you are using
+        - Project deadline or urgency
