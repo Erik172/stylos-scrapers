@@ -7,7 +7,7 @@
 <!-- GIF -->
 ![Zara Scraper Demo](media/zara-demo.gif)
 
-[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://github.com/erik172/stylos-scrapers)
+[![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)](https://github.com/erik172/stylos-scrapers)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![Scrapy](https://img.shields.io/badge/scrapy-2.13.2-green.svg)](https://scrapy.org)
 [![Docker](https://img.shields.io/badge/docker-enabled-blue.svg)](https://docker.com)
